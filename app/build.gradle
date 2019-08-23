@@ -47,8 +47,8 @@ dependencies {
     implementation "$androidLibGroupName:cardview-v7:$androidLibVersion"
     implementation "$androidLibGroupName:appcompat-v7:$androidLibVersion"
     implementation "$androidLibGroupName:support-v4:$androidLibVersion"
+    implementation "$androidLibGroupName:exifinterface:$androidLibVersion"
     implementation "$androidLibGroupName:support-annotations:$androidLibVersion"
     implementation "${androidLibGroupName}.constraint:constraint-layout:1.1.2"
-    kapt "com.android.databinding.compiler:$gradle_version"
     testImplementation 'junit:junit:4.12'
 }
