@@ -8,10 +8,9 @@ import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.widget.ImageView
 
-class PinchView @JvmOverloads constructor(
+class GestureCropImageView @JvmOverloads constructor(
     context: Context, attribute: AttributeSet? = null, defStyleAttr: Int = 0
-) :
-    ImageView(context, attribute, defStyleAttr) {
+) : ImageView(context, attribute, defStyleAttr) {
 
     private val scaleListener = ScaleListener()
     private val gestureListener = GestureListener()
@@ -22,8 +21,8 @@ class PinchView @JvmOverloads constructor(
         scaleEnable = enable
     }
 
+    private val gestureDetector = GestureDetector(context, gestureListener, null, true)
     private val scaleDetector = ScaleGestureDetector(context, scaleListener)
-    private val gestureDetector = ScaleGestureDetector(context, scaleListener)
 
 
     @SuppressLint("ClickableViewAccessibility")
@@ -42,7 +41,7 @@ class PinchView @JvmOverloads constructor(
 
         if (scaleEnable) scaleDetector.onTouchEvent(event)
 
-        if ( event.action eventCheck MotionEvent.ACTION_UP){
+        if (event.action eventCheck MotionEvent.ACTION_UP) {
             setImageToWrapCropBounds()
         }
 
@@ -67,7 +66,7 @@ class PinchView @JvmOverloads constructor(
 
         override fun onScale(detector: ScaleGestureDetector?): Boolean {
             if (detector == null) return false
-
+            // TODO : Scale
             return true
         }
     }
