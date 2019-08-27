@@ -1,13 +1,10 @@
 package com.photocard.wallpaper;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.*;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.Build.VERSION;
-import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.util.AttributeSet;
@@ -17,7 +14,6 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
-import android.widget.ImageView;
 import com.photocard.wallpaper.util.CompatScroller;
 import com.photocard.wallpaper.vo.ZoomVariables;
 
@@ -25,7 +21,7 @@ import com.photocard.wallpaper.vo.ZoomVariables;
  * Created by MyInnos on 28-11-2016.
  */
 
-public class BaseTouchImageView extends ImageView {
+public class BaseTouchImageView extends BaseImageView {
 
     private static final String DEBUG = "DEBUG";
 
@@ -1177,16 +1173,6 @@ public class BaseTouchImageView extends ImageView {
                 setImageMatrix(matrix);
                 compatPostOnAnimation(this);
             }
-        }
-    }
-
-    @TargetApi(VERSION_CODES.JELLY_BEAN)
-    private void compatPostOnAnimation(Runnable runnable) {
-        if (VERSION.SDK_INT >= VERSION_CODES.JELLY_BEAN) {
-            postOnAnimation(runnable);
-
-        } else {
-            postDelayed(runnable, 1000 / 60);
         }
     }
 
