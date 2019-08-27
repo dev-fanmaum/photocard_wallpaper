@@ -238,29 +238,29 @@ class BaseTouchImageView : BaseImageView {
 
     public override fun onSaveInstanceState(): Parcelable? {
         val bundle = Bundle()
-        bundle.putParcelable("instanceState", super.onSaveInstanceState())
-        bundle.putFloat("saveScale", normalizedScale)
-        bundle.putFloat("matchViewHeight", matchViewHeight)
-        bundle.putFloat("matchViewWidth", matchViewWidth)
-        bundle.putInt("viewWidth", viewWidth)
-        bundle.putInt("viewHeight", viewHeight)
+        bundle.putParcelable(INSTANCE_STATE, super.onSaveInstanceState())
+        bundle.putFloat(SAVE_SCALE, normalizedScale)
+        bundle.putFloat(MATCH_VIEW_HEIGHT, matchViewHeight)
+        bundle.putFloat(MATCH_VIEW_WIDTH, matchViewWidth)
+        bundle.putInt(VIEW_WIDTH, viewWidth)
+        bundle.putInt(VIEW_HEIGHT, viewHeight)
         nextMatrix!!.getValues(m)
-        bundle.putFloatArray("nextMatrix", m)
-        bundle.putBoolean("imageRendered", imageRenderedAtLeastOnce)
+        bundle.putFloatArray(NEXT_MATRIX, m)
+        bundle.putBoolean(IMAGE_RENDERED, imageRenderedAtLeastOnce)
         return bundle
     }
 
     public override fun onRestoreInstanceState(state: Parcelable) {
         if (state is Bundle) {
-            normalizedScale = state.getFloat("saveScale")
-            m = state.getFloatArray("nextMatrix") ?: floatArrayOf()
+            normalizedScale = state.getFloat(INSTANCE_STATE)
+            m = state.getFloatArray(SAVE_SCALE) ?: floatArrayOf()
             prevMatrix!!.setValues(m)
-            prevMatchViewHeight = state.getFloat("matchViewHeight")
-            prevMatchViewWidth = state.getFloat("matchViewWidth")
-            prevViewHeight = state.getInt("viewHeight")
-            prevViewWidth = state.getInt("viewWidth")
-            imageRenderedAtLeastOnce = state.getBoolean("imageRendered")
-            super.onRestoreInstanceState(state.getParcelable("instanceState"))
+            prevMatchViewHeight = state.getFloat(MATCH_VIEW_HEIGHT)
+            prevMatchViewWidth = state.getFloat(MATCH_VIEW_WIDTH)
+            prevViewHeight = state.getInt(VIEW_WIDTH)
+            prevViewWidth = state.getInt(VIEW_HEIGHT)
+            imageRenderedAtLeastOnce = state.getBoolean(NEXT_MATRIX)
+            super.onRestoreInstanceState(state.getParcelable(IMAGE_RENDERED))
             return
         }
 
@@ -1044,15 +1044,25 @@ class BaseTouchImageView : BaseImageView {
 
     companion object {
 
-        private val DEBUG = "DEBUG"
+        private const val DEBUG = "DEBUG"
 
         //
         // SuperMin and SuperMax multipliers. Determine how much the image can be
         // zoomed below or above the zoom boundaries, before animating back to the
         // min/max zoom boundary.
         //
-        private val SUPER_MIN_MULTIPLIER = .75f
-        private val SUPER_MAX_MULTIPLIER = 1.25f
+        private const val SUPER_MIN_MULTIPLIER = .75f
+        private const val SUPER_MAX_MULTIPLIER = 1.25f
+
+        private const val INSTANCE_STATE = "instanceState"
+        private const val SAVE_SCALE = "saveScale"
+        private const val MATCH_VIEW_HEIGHT = "matchViewHeight"
+        private const val MATCH_VIEW_WIDTH = "matchViewWidth"
+        private const val VIEW_WIDTH = "viewWidth"
+        private const val VIEW_HEIGHT = "viewHeight"
+        private const val NEXT_MATRIX = "nextMatrix"
+        private const val IMAGE_RENDERED = "imageRendered"
+
     }
 }
 /**
