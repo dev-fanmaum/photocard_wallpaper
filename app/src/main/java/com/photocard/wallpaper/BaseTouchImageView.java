@@ -14,8 +14,6 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
-import com.photocard.wallpaper.util.CompatScroller;
-import com.photocard.wallpaper.util.TouchEvent;
 import com.photocard.wallpaper.vo.ZoomVariables;
 import org.jetbrains.annotations.NotNull;
 
@@ -36,26 +34,13 @@ public class BaseTouchImageView extends BaseImageView {
     private static final float SUPER_MAX_MULTIPLIER = 1.25f;
 
     //
-    // Scale of image ranges from minScale to maxScale, where minScale == 1
-    // when the image is stretched to fit view.
-    //
-    private float normalizedScale;
-
-    //
     // Matrix applied to image. MSCALE_X and MSCALE_Y should always be equal.
     // MTRANS_X and MTRANS_Y are the other values used. prevMatrix is the matrix
     // saved prior to the screen rotating.
     //
     private Matrix matrix, prevMatrix;
 
-    private float minScale;
-    private float maxScale;
-    private float superMinScale;
-    private float superMaxScale;
-    private float[] m;
-
     private Context context;
-    private Fling fling;
 
     private ScaleType mScaleType;
 
@@ -64,23 +49,8 @@ public class BaseTouchImageView extends BaseImageView {
 
     private ZoomVariables delayedZoomVariables;
 
-    //
-    // Size of view and previous view size (ie before rotation)
-    //
-    private int viewWidth, viewHeight, prevViewWidth, prevViewHeight;
-
-    //
-    // Size of image when it is stretched to fit view. Before and After rotation.
-    //
-    private float matchViewWidth, matchViewHeight, prevMatchViewWidth, prevMatchViewHeight;
 
     private PointF last = new PointF();
-
-    private ScaleGestureDetector mScaleDetector;
-    private GestureDetector mGestureDetector;
-    private GestureDetector.OnDoubleTapListener doubleTapListener = null;
-    private OnTouchListener userTouchListener = null;
-    private OnTouchImageViewListener touchImageViewListener = null;
 
     public BaseTouchImageView(Context context) {
         super(context);
@@ -104,7 +74,6 @@ public class BaseTouchImageView extends BaseImageView {
         mGestureDetector = new GestureDetector(context, new GestureListener());
         matrix = new Matrix();
         prevMatrix = new Matrix();
-        m = new float[9];
         normalizedScale = 1;
         if (mScaleType == null) {
             mScaleType = ScaleType.FIT_CENTER;
@@ -125,7 +94,7 @@ public class BaseTouchImageView extends BaseImageView {
         userTouchListener = l;
     }
 
-    public void setOnTouchImageViewListener(OnTouchImageViewListener l) {
+    public void setOnTouchImageViewListener(OnTouchImageViewLIstener l) {
         touchImageViewListener = l;
     }
 
@@ -500,14 +469,6 @@ public class BaseTouchImageView extends BaseImageView {
         return delta;
     }
 
-    private float getImageWidth() {
-        return matchViewWidth * normalizedScale;
-    }
-
-    private float getImageHeight() {
-        return matchViewHeight * normalizedScale;
-    }
-
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         Drawable drawable = getDrawable();
@@ -800,10 +761,6 @@ public class BaseTouchImageView extends BaseImageView {
         }
     }
 
-    public interface OnTouchImageViewListener {
-        public void onMove();
-    }
-
     /**
      * Responsible for all touch events. Handles the heavy lifting of drag and also sends
      * touch events to Scale Detector and Gesture Detector.
@@ -1089,86 +1046,6 @@ public class BaseTouchImageView extends BaseImageView {
         return new PointF(finalX, finalY);
     }
 
-    /**
-     * Fling launches sequential runnables which apply
-     * the fling graphic to the image. The values for the translation
-     * are interpolated by the Scroller.
-     *
-     * @author Ortiz
-     */
-    private class Fling implements Runnable {
-
-        CompatScroller scroller;
-        int currX, currY;
-
-        Fling(int velocityX, int velocityY) {
-            setState(State.FLING);
-            scroller = new CompatScroller(context);
-            matrix.getValues(m);
-
-            int startX = (int) m[Matrix.MTRANS_X];
-            int startY = (int) m[Matrix.MTRANS_Y];
-            int minX, maxX, minY, maxY;
-
-            if (getImageWidth() > viewWidth) {
-                minX = viewWidth - (int) getImageWidth();
-                maxX = 0;
-
-            } else {
-                minX = maxX = startX;
-            }
-
-            if (getImageHeight() > viewHeight) {
-                minY = viewHeight - (int) getImageHeight();
-                maxY = 0;
-
-            } else {
-                minY = maxY = startY;
-            }
-
-            scroller.fling(startX, startY, (int) velocityX, (int) velocityY, minX,
-                    maxX, minY, maxY);
-            currX = startX;
-            currY = startY;
-        }
-
-        public void cancelFling() {
-            if (scroller != null) {
-                setState(State.NONE);
-                scroller.forceFinished(true);
-            }
-        }
-
-        @Override
-        public void run() {
-
-            //
-            // OnTouchImageViewListener is set: TouchImageView listener has been flung by user.
-            // Listener runnable updated with each frame of fling animation.
-            //
-            if (touchImageViewListener != null) {
-                touchImageViewListener.onMove();
-            }
-
-            if (scroller.isFinished()) {
-                scroller = null;
-                return;
-            }
-
-            if (scroller.computeScrollOffset()) {
-                int newX = scroller.getCurrX();
-                int newY = scroller.getCurrY();
-                int transX = newX - currX;
-                int transY = newY - currY;
-                currX = newX;
-                currY = newY;
-                matrix.postTranslate(transX, transY);
-                fixTrans();
-                setImageMatrix(matrix);
-                compatPostOnAnimation(this);
-            }
-        }
-    }
 
     private void printMatrixInfo() {
         float[] n = new float[9];
