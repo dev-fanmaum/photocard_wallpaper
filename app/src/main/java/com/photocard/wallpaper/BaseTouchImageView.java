@@ -1083,4 +1083,13 @@ public class BaseTouchImageView extends BaseImageView {
     protected void actionPointerUp(@NotNull PointF curr) {
         setState(State.NONE);
     }
+
+    @Override
+    public void onDrawForeground(Canvas canvas) {
+        super.onDrawForeground(canvas);
+        Paint paint = new Paint();
+        paint.setStrokeWidth(4f);
+        paint.setStyle(Paint.Style.STROKE);
+        canvas.drawRect(100, 100, 500, 500,paint);
+    }
 }
