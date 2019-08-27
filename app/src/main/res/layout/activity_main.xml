@@ -6,7 +6,7 @@
                                                    android:layout_height="match_parent"
                                                    tools:context=".MainActivity">
 
-    <com.photocard.wallpaper.TouchImageView
+    <com.photocard.wallpaper.BaseTouchImageView
             android:id="@+id/img"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
