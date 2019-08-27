@@ -15,13 +15,15 @@ import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import com.photocard.wallpaper.util.CompatScroller;
+import com.photocard.wallpaper.util.TouchEvent;
 import com.photocard.wallpaper.vo.ZoomVariables;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Created by MyInnos on 28-11-2016.
  */
 
-public class BaseTouchImageView extends BaseImageView {
+public class BaseTouchImageView extends BaseImageView implements TouchEvent {
 
     private static final String DEBUG = "DEBUG";
 
@@ -75,6 +77,8 @@ public class BaseTouchImageView extends BaseImageView {
     // Size of image when it is stretched to fit view. Before and After rotation.
     //
     private float matchViewWidth, matchViewHeight, prevMatchViewWidth, prevMatchViewHeight;
+
+    private PointF last = new PointF();
 
     private ScaleGestureDetector mScaleDetector;
     private GestureDetector mGestureDetector;
@@ -813,7 +817,7 @@ public class BaseTouchImageView extends BaseImageView {
         //
         // Remember last point position for dragging
         //
-        private PointF last = new PointF();
+
 
         @Override
         public boolean onTouch(View v, MotionEvent event) {
@@ -824,27 +828,19 @@ public class BaseTouchImageView extends BaseImageView {
             if (state == State.NONE || state == State.DRAG || state == State.FLING) {
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
-                        last.set(curr);
-                        if (fling != null)
-                            fling.cancelFling();
-                        setState(State.DRAG);
+                        actionDown(curr);
                         break;
 
                     case MotionEvent.ACTION_MOVE:
-                        if (state == State.DRAG) {
-                            float deltaX = curr.x - last.x;
-                            float deltaY = curr.y - last.y;
-                            float fixTransX = getFixDragTrans(deltaX, viewWidth, getImageWidth());
-                            float fixTransY = getFixDragTrans(deltaY, viewHeight, getImageHeight());
-                            matrix.postTranslate(fixTransX, fixTransY);
-                            fixTrans();
-                            last.set(curr.x, curr.y);
-                        }
+                        actionMove(curr);
                         break;
 
                     case MotionEvent.ACTION_UP:
+                        actionUp(curr);
+                        break;
+
                     case MotionEvent.ACTION_POINTER_UP:
-                        setState(State.NONE);
+                        actionPointerUp(curr);
                         break;
                 }
             }
@@ -1180,5 +1176,36 @@ public class BaseTouchImageView extends BaseImageView {
         float[] n = new float[9];
         matrix.getValues(n);
         Log.d(DEBUG, "Scale: " + n[Matrix.MSCALE_X] + " TransX: " + n[Matrix.MTRANS_X] + " TransY: " + n[Matrix.MTRANS_Y]);
+    }
+
+    @Override
+    public void actionDown(@NotNull PointF curr) {
+        last.set(curr);
+        if (fling != null)
+            fling.cancelFling();
+        setState(State.DRAG);
+    }
+
+    @Override
+    public void actionMove(@NotNull PointF curr) {
+        if (state == State.DRAG) {
+            float deltaX = curr.x - last.x;
+            float deltaY = curr.y - last.y;
+            float fixTransX = getFixDragTrans(deltaX, viewWidth, getImageWidth());
+            float fixTransY = getFixDragTrans(deltaY, viewHeight, getImageHeight());
+            matrix.postTranslate(fixTransX, fixTransY);
+            fixTrans();
+            last.set(curr.x, curr.y);
+        }
+    }
+
+    @Override
+    public void actionUp(@NotNull PointF curr) {
+        setState(State.NONE);
+    }
+
+    @Override
+    public void actionPointerUp(@NotNull PointF curr) {
+        setState(State.NONE);
     }
 }
