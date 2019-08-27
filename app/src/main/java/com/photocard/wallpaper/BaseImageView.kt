@@ -90,8 +90,6 @@ abstract class BaseImageView @JvmOverloads constructor(
 
     protected abstract fun fixTrans()
 
-    protected abstract fun setState(state: State)
-
     protected abstract fun actionDown(curr: PointF)
     protected abstract fun actionMove(curr: PointF)
     protected abstract fun actionUp(curr: PointF)
@@ -112,7 +110,7 @@ abstract class BaseImageView @JvmOverloads constructor(
         internal var currY: Int = 0
 
         init {
-            setState(BaseImageView.State.FLING)
+            state = State.FLING
             scroller = CompatScroller(context)
             matrix.getValues(m)
 
@@ -151,7 +149,7 @@ abstract class BaseImageView @JvmOverloads constructor(
 
         fun cancelFling() {
             if (scroller != null) {
-                setState(BaseImageView.State.NONE)
+                state = State.NONE
                 scroller!!.forceFinished(true)
             }
         }
