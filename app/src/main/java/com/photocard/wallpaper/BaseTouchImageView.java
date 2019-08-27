@@ -48,10 +48,6 @@ public class BaseTouchImageView extends BaseImageView implements TouchEvent {
     //
     private Matrix matrix, prevMatrix;
 
-    private enum State {NONE, DRAG, ZOOM, FLING, ANIMATE_ZOOM}
-
-    private State state;
-
     private float minScale;
     private float maxScale;
     private float superMinScale;
@@ -444,7 +440,8 @@ public class BaseTouchImageView extends BaseImageView implements TouchEvent {
      * Performs boundary checking and fixes the image matrix if it
      * is out of bounds.
      */
-    private void fixTrans() {
+    @Override
+    protected void fixTrans() {
         matrix.getValues(m);
         float transX = m[Matrix.MTRANS_X];
         float transY = m[Matrix.MTRANS_Y];
@@ -717,7 +714,8 @@ public class BaseTouchImageView extends BaseImageView implements TouchEvent {
         }
     }
 
-    private void setState(State state) {
+    @Override
+    protected void setState(State state) {
         this.state = state;
     }
 

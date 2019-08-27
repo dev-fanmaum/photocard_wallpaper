@@ -7,12 +7,17 @@ import android.os.Build
 import android.util.AttributeSet
 import android.widget.ImageView
 
-open class BaseImageView @JvmOverloads constructor(
+abstract class BaseImageView @JvmOverloads constructor(
     context: Context,
     attributeSet: AttributeSet? = null,
     defStyleAttr: Int = 0
 ) : ImageView(context, attributeSet, defStyleAttr) {
 
+
+    protected enum class State { NONE, DRAG, ZOOM, FLING, ANIMATE_ZOOM }
+
+    @JvmField
+    protected var state: State? = null
 
     @SuppressLint("ObsoleteSdkInt")
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
@@ -21,5 +26,8 @@ open class BaseImageView @JvmOverloads constructor(
         else postDelayed(runnable, (1000 / 60).toLong())
     }
 
+    protected abstract fun fixTrans()
+
+    protected abstract fun setState(state : State)
 
 }
