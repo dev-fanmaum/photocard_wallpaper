@@ -18,8 +18,7 @@ import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.ImageView;
-import android.widget.OverScroller;
-import android.widget.Scroller;
+import com.photocard.wallpaper.util.CompatScroller;
 import com.photocard.wallpaper.vo.ZoomVariables;
 
 /**
@@ -1177,73 +1176,6 @@ public class TouchImageView extends ImageView {
                 fixTrans();
                 setImageMatrix(matrix);
                 compatPostOnAnimation(this);
-            }
-        }
-    }
-
-    @TargetApi(VERSION_CODES.GINGERBREAD)
-    private class CompatScroller {
-        Scroller scroller;
-        OverScroller overScroller;
-        boolean isPreGingerbread;
-
-        public CompatScroller(Context context) {
-            if (VERSION.SDK_INT < VERSION_CODES.GINGERBREAD) {
-                isPreGingerbread = true;
-                scroller = new Scroller(context);
-
-            } else {
-                isPreGingerbread = false;
-                overScroller = new OverScroller(context);
-            }
-        }
-
-        public void fling(int startX, int startY, int velocityX, int velocityY, int minX, int maxX, int minY, int maxY) {
-            if (isPreGingerbread) {
-                scroller.fling(startX, startY, velocityX, velocityY, minX, maxX, minY, maxY);
-            } else {
-                overScroller.fling(startX, startY, velocityX, velocityY, minX, maxX, minY, maxY);
-            }
-        }
-
-        public void forceFinished(boolean finished) {
-            if (isPreGingerbread) {
-                scroller.forceFinished(finished);
-            } else {
-                overScroller.forceFinished(finished);
-            }
-        }
-
-        public boolean isFinished() {
-            if (isPreGingerbread) {
-                return scroller.isFinished();
-            } else {
-                return overScroller.isFinished();
-            }
-        }
-
-        public boolean computeScrollOffset() {
-            if (isPreGingerbread) {
-                return scroller.computeScrollOffset();
-            } else {
-                overScroller.computeScrollOffset();
-                return overScroller.computeScrollOffset();
-            }
-        }
-
-        public int getCurrX() {
-            if (isPreGingerbread) {
-                return scroller.getCurrX();
-            } else {
-                return overScroller.getCurrX();
-            }
-        }
-
-        public int getCurrY() {
-            if (isPreGingerbread) {
-                return scroller.getCurrY();
-            } else {
-                return overScroller.getCurrY();
             }
         }
     }
