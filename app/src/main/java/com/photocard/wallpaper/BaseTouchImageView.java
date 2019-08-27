@@ -23,7 +23,7 @@ import org.jetbrains.annotations.NotNull;
  * Created by MyInnos on 28-11-2016.
  */
 
-public class BaseTouchImageView extends BaseImageView implements TouchEvent {
+public class BaseTouchImageView extends BaseImageView {
 
     private static final String DEBUG = "DEBUG";
 
@@ -1177,7 +1177,7 @@ public class BaseTouchImageView extends BaseImageView implements TouchEvent {
     }
 
     @Override
-    public void actionDown(@NotNull PointF curr) {
+    protected void actionDown(@NotNull PointF curr) {
         last.set(curr);
         if (fling != null)
             fling.cancelFling();
@@ -1185,7 +1185,7 @@ public class BaseTouchImageView extends BaseImageView implements TouchEvent {
     }
 
     @Override
-    public void actionMove(@NotNull PointF curr) {
+    protected void actionMove(@NotNull PointF curr) {
         if (state == State.DRAG) {
             float deltaX = curr.x - last.x;
             float deltaY = curr.y - last.y;
@@ -1198,12 +1198,12 @@ public class BaseTouchImageView extends BaseImageView implements TouchEvent {
     }
 
     @Override
-    public void actionUp(@NotNull PointF curr) {
+    protected void actionUp(@NotNull PointF curr) {
         setState(State.NONE);
     }
 
     @Override
-    public void actionPointerUp(@NotNull PointF curr) {
+    protected void actionPointerUp(@NotNull PointF curr) {
         setState(State.NONE);
     }
 }

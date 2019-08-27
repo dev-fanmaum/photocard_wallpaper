@@ -3,6 +3,7 @@ package com.photocard.wallpaper
 import android.annotation.SuppressLint
 import android.annotation.TargetApi
 import android.content.Context
+import android.graphics.PointF
 import android.os.Build
 import android.util.AttributeSet
 import android.widget.ImageView
@@ -29,5 +30,10 @@ abstract class BaseImageView @JvmOverloads constructor(
     protected abstract fun fixTrans()
 
     protected abstract fun setState(state : State)
+
+    protected abstract fun actionDown(curr : PointF)
+    protected abstract fun actionMove(curr : PointF)
+    protected abstract fun actionUp(curr : PointF)
+    protected abstract fun actionPointerUp(curr : PointF)
 
 }
