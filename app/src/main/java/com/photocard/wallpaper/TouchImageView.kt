@@ -154,7 +154,7 @@ class TouchImageView @JvmOverloads constructor(
         if (mScaleType == null) {
             mScaleType = ScaleType.FIT_CENTER
         }
-        minScale = 1f
+        minScale = .8f
         maxScale = 3f
         superMinScale = SUPER_MIN_MULTIPLIER * minScale
         superMaxScale = SUPER_MAX_MULTIPLIER * maxScale
