@@ -20,7 +20,13 @@ import com.photocard.wallpaper.vo.ZoomVariables
  * Created by MyInnos on 28-11-2016.
  */
 
-class BaseTouchImageView : BaseImageView {
+class BaseTouchImageView @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyle: Int = 0
+) : BaseImageView(
+    context, attrs, defStyle
+) {
 
     //
     // Matrix applied to image. MSCALE_X and MSCALE_Y should always be equal.
@@ -45,7 +51,7 @@ class BaseTouchImageView : BaseImageView {
      *
      * @return true if image is zoomed
      */
-    val isZoomed: Boolean
+    private val isZoomed: Boolean
         get() = normalizedScale != 1f
 
     /**
@@ -106,7 +112,7 @@ class BaseTouchImageView : BaseImageView {
      *
      * @return current zoom multiplier.
      */
-    val currentZoom: Float
+    private val currentZoom: Float
         get() = normalizedScale
 
     /**
@@ -117,7 +123,7 @@ class BaseTouchImageView : BaseImageView {
      *
      * @return PointF representing the scroll position of the zoomed image.
      */
-    val scrollPosition: PointF?
+    private val scrollPosition: PointF?
         get() {
             val drawable = drawable ?: return null
             val drawableWidth = drawable.intrinsicWidth
@@ -129,19 +135,7 @@ class BaseTouchImageView : BaseImageView {
             return point
         }
 
-    constructor(context: Context) : super(context) {
-        sharedConstructing(context)
-    }
-
-    constructor(context: Context, attrs: AttributeSet) : super(context, attrs) {
-        sharedConstructing(context)
-    }
-
-    constructor(context: Context, attrs: AttributeSet, defStyle: Int) : super(context, attrs, defStyle) {
-        sharedConstructing(context)
-    }
-
-    private fun sharedConstructing(context: Context) {
+    init {
         super.setClickable(true)
         mScaleDetector = ScaleGestureDetector(context, ScaleListener())
         mGestureDetector = GestureDetector(context, GestureListener())
@@ -156,13 +150,13 @@ class BaseTouchImageView : BaseImageView {
         superMinScale = SUPER_MIN_MULTIPLIER * minScale
         superMaxScale = SUPER_MAX_MULTIPLIER * maxScale
         imageMatrix = nextMatrix
-        setScaleType(ScaleType.MATRIX)
-        state = (BaseImageView.State.NONE)
+        scaleType = ScaleType.MATRIX
+        state = (State.NONE)
         onDrawReady = false
         super.setOnTouchListener(PrivateOnTouchListener())
     }
 
-    override fun setOnTouchListener(l: View.OnTouchListener) {
+    override fun setOnTouchListener(l: OnTouchListener) {
         userTouchListener = l
     }
 
@@ -580,27 +574,16 @@ class BaseTouchImageView : BaseImageView {
         imageMatrix = nextMatrix
     }
 
-    /**
-     * Set view dimensions based on layout params
-     *
-     * @param mode
-     * @param size
-     * @param drawableWidth
-     * @return
-     */
-    private fun setViewSize(mode: Int, size: Int, drawableWidth: Int): Int {
-        val viewSize: Int
+    private fun setViewSize(mode: Int, size: Int, drawableWidth: Int): Int =
         when (mode) {
-            View.MeasureSpec.EXACTLY -> viewSize = size
+            MeasureSpec.EXACTLY -> size
 
-            View.MeasureSpec.AT_MOST -> viewSize = Math.min(drawableWidth, size)
+            MeasureSpec.AT_MOST -> Math.min(drawableWidth, size)
 
-            View.MeasureSpec.UNSPECIFIED -> viewSize = drawableWidth
+            MeasureSpec.UNSPECIFIED -> drawableWidth
 
-            else -> viewSize = size
+            else -> size
         }
-        return viewSize
-    }
 
     /**
      * After rotating, the nextMatrix needs to be translated. This function finds the area of image
@@ -623,48 +606,36 @@ class BaseTouchImageView : BaseImageView {
         viewSize: Int,
         drawableSize: Int
     ) {
-        if (imageSize < viewSize) {
-            //
-            // The width/height of image is less than the view's width/height. Center it.
-            //
-            m[axis] = (viewSize - drawableSize * m[Matrix.MSCALE_X]) * 0.5f
-
-        } else if (trans > 0) {
-            //
-            // The image is larger than the view, but was not before rotation. Center it.
-            //
-            m[axis] = -((imageSize - viewSize) * 0.5f)
-
-        } else {
-            //
-            // Find the area of the image which was previously centered in the view. Determine its distance
-            // from the left/top side of the view as a fraction of the entire image's width/height. Use that percentage
-            // to calculate the trans in the new view width/height.
-            //
-            val percentage = (Math.abs(trans) + 0.5f * prevViewSize) / prevImageSize
-            m[axis] = -(percentage * imageSize - viewSize * 0.5f)
+        m[axis] = when {
+            imageSize < viewSize -> //
+                // The width/height of image is less than the view's width/height. Center it.
+                //
+                (viewSize - drawableSize * m[Matrix.MSCALE_X]) * 0.5f
+            trans > 0 -> //
+                // The image is larger than the view, but was not before rotation. Center it.
+                //
+                -((imageSize - viewSize) * 0.5f)
+            else -> {
+                //
+                // Find the area of the image which was previously centered in the view. Determine its distance
+                // from the left/top side of the view as a fraction of the entire image's width/height. Use that percentage
+                // to calculate the trans in the new view width/height.
+                //
+                val percentage = (Math.abs(trans) + 0.5f * prevViewSize) / prevImageSize
+                -(percentage * imageSize - viewSize * 0.5f)
+            }
         }
     }
 
-    fun canScrollHorizontallyFroyo(direction: Int): Boolean {
-        return canScrollHorizontally(direction)
-    }
+    fun canScrollHorizontallyFroyo(direction: Int): Boolean =
+        canScrollHorizontally(direction)
 
     override fun canScrollHorizontally(direction: Int): Boolean {
         nextMatrix!!.getValues(m)
         val x = m[Matrix.MTRANS_X]
-
-        if (getImageWidth() < viewWidth) {
-            return false
-
-        } else if (x >= -1 && direction < 0) {
-            return false
-
-        } else if (Math.abs(x) + viewWidth.toFloat() + 1f >= getImageWidth() && direction > 0) {
-            return false
-        }
-
-        return true
+        return if (getImageWidth() < viewWidth) false
+        else if (x >= -1 && direction < 0) false
+        else !(Math.abs(x) + viewWidth.toFloat() + 1f >= getImageWidth() && direction > 0)
     }
 
     /**
@@ -712,11 +683,10 @@ class BaseTouchImageView : BaseImageView {
             return consumed
         }
 
-        override fun onDoubleTapEvent(e: MotionEvent): Boolean {
-            return if (doubleTapListener != null) {
+        override fun onDoubleTapEvent(e: MotionEvent): Boolean =
+            if (doubleTapListener != null) {
                 doubleTapListener!!.onDoubleTapEvent(e)
             } else false
-        }
     }
 
     /**
@@ -1027,11 +997,11 @@ class BaseTouchImageView : BaseImageView {
     }
 
     override fun actionUp(curr: PointF) {
-        state = (BaseImageView.State.NONE)
+        state = (State.NONE)
     }
 
     override fun actionPointerUp(curr: PointF) {
-        state = (BaseImageView.State.NONE)
+        state = (State.NONE)
     }
 
     override fun onDrawForeground(canvas: Canvas) {
