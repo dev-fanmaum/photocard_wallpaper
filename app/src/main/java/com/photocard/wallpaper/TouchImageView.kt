@@ -8,11 +8,9 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Parcelable
 import android.util.AttributeSet
+import android.util.DisplayMetrics
 import android.util.Log
-import android.view.GestureDetector
-import android.view.MotionEvent
-import android.view.ScaleGestureDetector
-import android.view.View
+import android.view.*
 import android.view.animation.AccelerateDecelerateInterpolator
 import com.photocard.wallpaper.vo.ZoomVariables
 
@@ -697,7 +695,7 @@ class TouchImageView @JvmOverloads constructor(
 
         override fun onTouch(v: View, event: MotionEvent): Boolean {
             mScaleDetector!!.onTouchEvent(event)
-            mGestureDetector!!.onTouchEvent(event)
+//            mGestureDetector!!.onTouchEvent(event)
             val curr = PointF(event.x, event.y)
 
             if (state === State.NONE || state === State.DRAG || state === State.FLING) {
@@ -999,9 +997,18 @@ class TouchImageView @JvmOverloads constructor(
     override fun onDrawForeground(canvas: Canvas) {
         super.onDrawForeground(canvas)
         val paint = Paint()
+
+
+        val size = Point()
+        val windowView = (context.getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay
+            .getSize(size)
+
+        val deviceWidth = size.x
+        val deviceHeight = size.y
+
         paint.strokeWidth = 4f
         paint.style = Paint.Style.STROKE
-        canvas.drawRect(100f, 100f, 500f, 500f, paint)
+        canvas.drawRect(deviceWidth * .1f, deviceHeight * .1f, deviceWidth * .8f, deviceHeight * .8f, paint)
     }
 
     companion object {
