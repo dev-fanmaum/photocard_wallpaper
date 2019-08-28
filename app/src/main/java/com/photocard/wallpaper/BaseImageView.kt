@@ -71,7 +71,7 @@ abstract class BaseImageView @JvmOverloads constructor(
     @JvmField
     protected var doubleTapListener: GestureDetector.OnDoubleTapListener? = null
     @JvmField
-    protected var userTouchListener: View.OnTouchListener? = null
+    protected var userTouchListener: OnTouchListener? = null
     @JvmField
     protected var touchImageViewListener: OnTouchImageViewLIstener? = null
 

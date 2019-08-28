@@ -410,16 +410,15 @@ class TouchImageView @JvmOverloads constructor(
             maxTrans = 0f
         }
 
-        if (trans < minTrans)
-            return -trans + minTrans
-        return if (trans > maxTrans) -trans + maxTrans else 0f
+        return when {
+            trans < minTrans -> -trans + minTrans
+            trans > maxTrans -> -trans + maxTrans
+            else -> 0f
+        }
     }
 
-    private fun getFixDragTrans(delta: Float, viewSize: Float, contentSize: Float): Float {
-        return if (contentSize <= viewSize) {
-            0f
-        } else delta
-    }
+    private fun getFixDragTrans(delta: Float, viewSize: Float, contentSize: Float): Float =
+        if (contentSize <= viewSize) 0f else delta
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val drawable = drawable
