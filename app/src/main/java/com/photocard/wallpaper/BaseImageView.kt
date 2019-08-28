@@ -51,9 +51,9 @@ abstract class BaseImageView @JvmOverloads constructor(
     protected var prevMatchViewHeight: Float = 0.toFloat()
 
     @JvmField
-    protected var minScale: Float = 0.toFloat()
+    protected var minScale: Float = .8f
     @JvmField
-    protected var maxScale: Float = 0.toFloat()
+    protected var maxScale: Float = 3f
     @JvmField
     protected var superMinScale: Float = 0.toFloat()
     @JvmField
