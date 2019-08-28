@@ -18,7 +18,7 @@ import com.photocard.wallpaper.vo.ZoomVariables
  * Created by MyInnos on 28-11-2016.
  */
 
-class TouchImageView @JvmOverloads constructor(
+open class TouchImageView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyle: Int = 0
