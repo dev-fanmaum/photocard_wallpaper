@@ -8,10 +8,10 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Parcelable
 import android.util.AttributeSet
-import android.util.DisplayMetrics
 import android.util.Log
 import android.view.*
 import android.view.animation.AccelerateDecelerateInterpolator
+import androidx.annotation.IntDef
 import com.photocard.wallpaper.vo.ZoomVariables
 
 /**
@@ -31,7 +31,6 @@ class TouchImageView @JvmOverloads constructor(
     // MTRANS_X and MTRANS_Y are the other values used. prevMatrix is the nextMatrix
     // saved prior to the screen rotating.
     //
-
 
     private val deviceWidth: Float
     private val deviceHeight: Float
@@ -369,12 +368,12 @@ class TouchImageView @JvmOverloads constructor(
         val transX = m[Matrix.MTRANS_X]
         val transY = m[Matrix.MTRANS_Y]
 
-        val fixTransX = getFixTrans(transX, viewWidth.toFloat(), getImageWidth())
-        val fixTransY = getFixTrans(transY, viewHeight.toFloat(), getImageHeight())
+        val fixTransX = getFixTrans(transX, viewWidth.toFloat(), getImageWidth(), HORIZONTAL_DRAG)
+        val fixTransY = getFixTrans(transY, viewHeight.toFloat(), getImageHeight(), VERTICAL_DRAG)
 
-        if (fixTransX != 0f || fixTransY != 0f) {
-            nextMatrix?.postTranslate(fixTransX, fixTransY)
-        }
+//        if (fixTransX != 0f || fixTransY != 0f) {
+        nextMatrix?.postTranslate(fixTransX, fixTransY)
+//        }
     }
 
     /**
@@ -397,18 +396,11 @@ class TouchImageView @JvmOverloads constructor(
         nextMatrix?.setValues(m)
     }
 
-    private fun getFixTrans(trans: Float, viewSize: Float, contentSize: Float): Float {
-        val minTrans: Float
-        val maxTrans: Float
+    private fun getFixTrans(trans: Float, viewSize: Float, contentSize: Float, @DragPosition type: Int): Float {
+        val typeSize = if (type == HORIZONTAL_DRAG) viewWidth else viewHeight
 
-        if (contentSize <= viewSize) {
-            minTrans = 0f
-            maxTrans = viewSize - contentSize
-
-        } else {
-            minTrans = viewSize - contentSize
-            maxTrans = 0f
-        }
+        val minTrans = -(typeSize * .1f + contentSize - viewSize)
+        val maxTrans = (typeSize * .1f)
 
         return when {
             trans < minTrans -> -trans + minTrans
@@ -1005,7 +997,7 @@ class TouchImageView @JvmOverloads constructor(
 
         paint.strokeWidth = 4f
         paint.style = Paint.Style.STROKE
-        canvas.drawRect(deviceWidth * .1f, deviceHeight * .1f, deviceWidth * .8f, deviceHeight * .8f, paint)
+        canvas.drawRect(deviceWidth * .1f, deviceHeight * .1f, deviceWidth * .9f, deviceHeight * .9f, paint)
     }
 
     companion object {
@@ -1028,6 +1020,14 @@ class TouchImageView @JvmOverloads constructor(
         private const val VIEW_HEIGHT = "viewHeight"
         private const val NEXT_MATRIX = "nextMatrix"
         private const val IMAGE_RENDERED = "imageRendered"
+
+        private const val VERTICAL_DRAG = 1
+        private const val HORIZONTAL_DRAG = 2
+
+
+        @IntDef(VERTICAL_DRAG, HORIZONTAL_DRAG)
+        @Retention(AnnotationRetention.SOURCE)
+        private annotation class DragPosition {}
 
     }
 }
