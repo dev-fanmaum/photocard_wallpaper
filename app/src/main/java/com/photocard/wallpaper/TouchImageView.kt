@@ -31,6 +31,11 @@ class TouchImageView @JvmOverloads constructor(
     // MTRANS_X and MTRANS_Y are the other values used. prevMatrix is the nextMatrix
     // saved prior to the screen rotating.
     //
+
+
+    private val deviceWidth: Float
+    private val deviceHeight: Float
+
     private var nextMatrix: Matrix? = null
     private var prevMatrix: Matrix? = null
 
@@ -135,6 +140,13 @@ class TouchImageView @JvmOverloads constructor(
 
     init {
         super.setClickable(true)
+
+        val size = Point()
+        (context.getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay.getSize(size)
+
+        deviceWidth = size.x.toFloat()
+        deviceHeight = size.y.toFloat()
+
         mScaleDetector = ScaleGestureDetector(context, ScaleListener())
         mGestureDetector = GestureDetector(context, GestureListener())
         nextMatrix = Matrix()
@@ -997,14 +1009,6 @@ class TouchImageView @JvmOverloads constructor(
     override fun onDrawForeground(canvas: Canvas) {
         super.onDrawForeground(canvas)
         val paint = Paint()
-
-
-        val size = Point()
-        val windowView = (context.getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay
-            .getSize(size)
-
-        val deviceWidth = size.x
-        val deviceHeight = size.y
 
         paint.strokeWidth = 4f
         paint.style = Paint.Style.STROKE
