@@ -369,9 +369,9 @@ class TouchImageView @JvmOverloads constructor(
         val fixTransX = getFixTrans(transX, viewWidth.toFloat(), getImageWidth(), HORIZONTAL_DRAG)
         val fixTransY = getFixTrans(transY, viewHeight.toFloat(), getImageHeight(), VERTICAL_DRAG)
 
-//        if (fixTransX != 0f || fixTransY != 0f) {
-        nextMatrix?.postTranslate(fixTransX, fixTransY)
-//        }
+        if (fixTransX != 0f || fixTransY != 0f) {
+            nextMatrix?.postTranslate(fixTransX, fixTransY)
+        }
     }
 
     /**
@@ -406,9 +406,6 @@ class TouchImageView @JvmOverloads constructor(
             else -> 0f
         }
     }
-
-    private fun getFixDragTrans(delta: Float, viewSize: Float, contentSize: Float): Float =
-        if (contentSize <= viewSize) 0f else delta
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val drawable = drawable
@@ -973,9 +970,7 @@ class TouchImageView @JvmOverloads constructor(
         if (state === State.DRAG) {
             val deltaX = curr.x - last.x
             val deltaY = curr.y - last.y
-            val fixTransX = getFixDragTrans(deltaX, viewWidth.toFloat(), getImageWidth())
-            val fixTransY = getFixDragTrans(deltaY, viewHeight.toFloat(), getImageHeight())
-            nextMatrix?.postTranslate(fixTransX, fixTransY)
+            nextMatrix?.postTranslate(deltaX, deltaY)
             fixTrans()
             last.set(curr.x, curr.y)
         }
