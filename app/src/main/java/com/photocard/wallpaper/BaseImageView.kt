@@ -23,62 +23,41 @@ abstract class BaseImageView @JvmOverloads constructor(
     // Scale of image ranges from minScale to maxScale, where minScale == 1
     // when the image is stretched to fit view.
     //
-    @JvmField
     protected var normalizedScale: Float = 0.toFloat()
 
     //
     // Size of view and previous view size (ie before rotation)
     //
-    @JvmField
     protected var viewWidth: Int = 0
-    @JvmField
     protected var viewHeight: Int = 0
-    @JvmField
     protected var prevViewWidth: Int = 0
-    @JvmField
     protected var prevViewHeight: Int = 0
 
     //
     // Size of image when it is stretched to fit view. Before and After rotation.
     //
-    @JvmField
     protected var matchViewWidth: Float = 0.toFloat()
-    @JvmField
     protected var matchViewHeight: Float = 0.toFloat()
-    @JvmField
     protected var prevMatchViewWidth: Float = 0.toFloat()
-    @JvmField
     protected var prevMatchViewHeight: Float = 0.toFloat()
 
-    @JvmField
     protected var minScale: Float = .8f
-    @JvmField
     protected var maxScale: Float = 3f
-    @JvmField
     protected var superMinScale: Float = 0.toFloat()
-    @JvmField
     protected var superMaxScale: Float = 0.toFloat()
-    @JvmField
     protected var m: FloatArray = FloatArray(9)
 
-    @JvmField
     protected var fling: Fling? = null
 
-    @JvmField
     protected var mScaleDetector: ScaleGestureDetector? = null
-    @JvmField
     protected var mGestureDetector: GestureDetector? = null
-    @JvmField
     protected var doubleTapListener: GestureDetector.OnDoubleTapListener? = null
-    @JvmField
     protected var userTouchListener: OnTouchListener? = null
-    @JvmField
     protected var touchImageViewListener: OnTouchImageViewLIstener? = null
 
 
     protected enum class State { NONE, DRAG, ZOOM, FLING, ANIMATE_ZOOM }
 
-    @JvmField
     protected var state: State? = null
 
     @SuppressLint("ObsoleteSdkInt")

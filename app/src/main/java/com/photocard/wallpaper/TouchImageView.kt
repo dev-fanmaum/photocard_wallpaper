@@ -46,6 +46,7 @@ open class TouchImageView @JvmOverloads constructor(
     private var delayedZoomVariables: ZoomVariables? = null
 
 
+
     private val last = PointF()
 
     /**
