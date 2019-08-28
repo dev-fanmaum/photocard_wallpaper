@@ -211,9 +211,7 @@ class BaseTouchImageView @JvmOverloads constructor(
         }
     }
 
-    override fun getScaleType(): ScaleType? {
-        return mScaleType
-    }
+    override fun getScaleType(): ScaleType? = mScaleType
 
     /**
      * Save the current nextMatrix and view dimensions
@@ -646,24 +644,19 @@ class BaseTouchImageView @JvmOverloads constructor(
      */
     private inner class GestureListener : GestureDetector.SimpleOnGestureListener() {
 
-        override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
-            return if (doubleTapListener != null) {
-                doubleTapListener!!.onSingleTapConfirmed(e)
-            } else performClick()
-        }
+        override fun onSingleTapConfirmed(e: MotionEvent): Boolean =
+            if (doubleTapListener != null) doubleTapListener!!.onSingleTapConfirmed(e) else performClick()
 
         override fun onLongPress(e: MotionEvent) {
             performLongClick()
         }
 
         override fun onFling(e1: MotionEvent, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
-            if (fling != null) {
-                //
-                // If a previous fling is still active, it should be cancelled so that two flings
-                // are not run simultaenously.
-                //
-                fling!!.cancelFling()
-            }
+            //
+            // If a previous fling is still active, it should be cancelled so that two flings
+            // are not run simultaenously.
+            //
+            fling?.cancelFling()
             fling = Fling(velocityX.toInt(), velocityY.toInt())
             compatPostOnAnimation(fling!!)
             return super.onFling(e1, e2, velocityX, velocityY)
@@ -674,7 +667,7 @@ class BaseTouchImageView @JvmOverloads constructor(
             if (doubleTapListener != null) {
                 consumed = doubleTapListener!!.onDoubleTap(e)
             }
-            if (state === BaseImageView.State.NONE) {
+            if (state === State.NONE) {
                 val targetZoom = if (normalizedScale == minScale) maxScale else minScale
                 val doubleTap = DoubleTapZoom(targetZoom, e.x, e.y, false)
                 compatPostOnAnimation(doubleTap)
@@ -695,7 +688,7 @@ class BaseTouchImageView @JvmOverloads constructor(
      *
      * @author Ortiz
      */
-    private inner class PrivateOnTouchListener : View.OnTouchListener {
+    private inner class PrivateOnTouchListener : OnTouchListener {
 
         //
         // Remember last point position for dragging
@@ -707,7 +700,7 @@ class BaseTouchImageView @JvmOverloads constructor(
             mGestureDetector!!.onTouchEvent(event)
             val curr = PointF(event.x, event.y)
 
-            if (state === BaseImageView.State.NONE || state === BaseImageView.State.DRAG || state === BaseImageView.State.FLING) {
+            if (state === State.NONE || state === State.DRAG || state === State.FLING) {
                 when (event.action) {
                     MotionEvent.ACTION_DOWN -> actionDown(curr)
 
@@ -749,7 +742,7 @@ class BaseTouchImageView @JvmOverloads constructor(
      */
     private inner class ScaleListener : ScaleGestureDetector.SimpleOnScaleGestureListener() {
         override fun onScaleBegin(detector: ScaleGestureDetector): Boolean {
-            state = (BaseImageView.State.ZOOM)
+            state = (State.ZOOM)
             return true
         }
 
@@ -767,7 +760,7 @@ class BaseTouchImageView @JvmOverloads constructor(
 
         override fun onScaleEnd(detector: ScaleGestureDetector) {
             super.onScaleEnd(detector)
-            state = (BaseImageView.State.NONE)
+            state = (State.NONE)
             var animateToZoomBoundary = false
             var targetZoom = normalizedScale
             if (normalizedScale > maxScale) {
@@ -836,7 +829,7 @@ class BaseTouchImageView @JvmOverloads constructor(
         private val endTouch: PointF
 
         init {
-            state = (BaseImageView.State.ANIMATE_ZOOM)
+            state = (State.ANIMATE_ZOOM)
             startTime = System.currentTimeMillis()
             this.startZoom = normalizedScale
             val bitmapPoint = transformCoordTouchToBitmap(focusX, focusY, false)
@@ -876,7 +869,7 @@ class BaseTouchImageView @JvmOverloads constructor(
                 //
                 // Finished zooming
                 //
-                state = (BaseImageView.State.NONE)
+                state = (State.NONE)
             }
         }
 
@@ -979,13 +972,12 @@ class BaseTouchImageView @JvmOverloads constructor(
 
     override fun actionDown(curr: PointF) {
         last.set(curr)
-        if (fling != null)
-            fling!!.cancelFling()
-        state = (BaseImageView.State.DRAG)
+        fling?.cancelFling()
+        state = (State.DRAG)
     }
 
     override fun actionMove(curr: PointF) {
-        if (state === BaseImageView.State.DRAG) {
+        if (state === State.DRAG) {
             val deltaX = curr.x - last.x
             val deltaY = curr.y - last.y
             val fixTransX = getFixDragTrans(deltaX, viewWidth.toFloat(), getImageWidth())
@@ -1035,18 +1027,3 @@ class BaseTouchImageView @JvmOverloads constructor(
 
     }
 }
-/**
- * Set zoom to the specified scale. Image will be centered by default.
- *
- * @param scale
- */
-/**
- * Set zoom to the specified scale. Image will be centered around the point
- * (focusX, focusY). These floats range from 0 to 1 and denote the focus point
- * as a fraction from the left and top of the view. For example, the top left
- * corner of the image would be (0, 0). And the bottom right corner would be (1, 1).
- *
- * @param scale
- * @param focusX
- * @param focusY
- */
