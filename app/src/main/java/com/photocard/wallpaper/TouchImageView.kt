@@ -20,7 +20,7 @@ import com.photocard.wallpaper.vo.ZoomVariables
  * Created by MyInnos on 28-11-2016.
  */
 
-class BaseTouchImageView @JvmOverloads constructor(
+class TouchImageView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyle: Int = 0
@@ -334,7 +334,7 @@ class BaseTouchImageView @JvmOverloads constructor(
      *
      * @param
      */
-    fun setZoom(img: BaseTouchImageView) {
+    fun setZoom(img: TouchImageView) {
         val center = img.scrollPosition
         setZoom(img.currentZoom, center!!.x, center.y, img.scaleType)
     }
