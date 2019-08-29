@@ -357,12 +357,13 @@ open class TouchImageView @JvmOverloads constructor(
                 deviceForegroundBoxSize.right,
                 getImageWidth()
             )
-        val fixTransY = getFixTrans(
-            transY,
-            deviceForegroundBoxSize.top,
-            deviceForegroundBoxSize.bottom,
-            getImageHeight()
-        )
+        val fixTransY =
+            getFixTrans(
+                transY,
+                deviceForegroundBoxSize.top,
+                deviceForegroundBoxSize.bottom,
+                getImageHeight()
+            )
 
         if (fixTransX != 0f || fixTransY != 0f) {
             nextMatrix?.postTranslate(fixTransX, fixTransY)
