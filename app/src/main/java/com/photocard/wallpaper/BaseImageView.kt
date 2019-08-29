@@ -3,15 +3,20 @@ package com.photocard.wallpaper
 import android.annotation.SuppressLint
 import android.annotation.TargetApi
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.Matrix
 import android.graphics.PointF
+import android.graphics.drawable.Drawable
+import android.net.Uri
 import android.os.Build
 import android.util.AttributeSet
 import android.view.GestureDetector
 import android.view.ScaleGestureDetector
-import android.view.View
 import android.widget.ImageView
+import com.bumptech.glide.RequestBuilder
 import com.photocard.wallpaper.util.CompatScroller
+import kotlinx.coroutines.*
+import java.lang.Runnable
 
 abstract class BaseImageView @JvmOverloads constructor(
     context: Context,
@@ -72,12 +77,50 @@ abstract class BaseImageView @JvmOverloads constructor(
 
     }
 
+    override fun setImageResource(resId: Int) {
+        super.setImageResource(resId)
+        savePreviousImageValues()
+        fitImageToView()
+    }
+
+    override fun setImageBitmap(bm: Bitmap) {
+        super.setImageBitmap(bm)
+        savePreviousImageValues()
+        fitImageToView()
+    }
+
+    override fun setImageDrawable(drawable: Drawable?) {
+        super.setImageDrawable(drawable)
+        savePreviousImageValues()
+        fitImageToView()
+    }
+
+    override fun setImageURI(uri: Uri?) {
+        super.setImageURI(uri)
+        savePreviousImageValues()
+        fitImageToView()
+    }
+
+    fun setImageGlide(glide: RequestBuilder<Drawable>) {
+
+        val imageLoadAsync = CoroutineScope(Dispatchers.IO).async { glide.submit().get() }
+
+        CoroutineScope(Dispatchers.IO).launch {
+            val drawable = imageLoadAsync.await()
+            withContext(Dispatchers.Main) { setImageDrawable(drawable) }
+        }
+
+    }
+
     protected abstract fun fixTrans()
 
     protected abstract fun actionDown(curr: PointF)
     protected abstract fun actionMove(curr: PointF)
     protected abstract fun actionUp(curr: PointF)
     protected abstract fun actionPointerUp(curr: PointF)
+
+    protected abstract fun savePreviousImageValues()
+    protected abstract fun fitImageToView()
 
 
     /**

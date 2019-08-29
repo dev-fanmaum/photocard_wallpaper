@@ -172,30 +172,6 @@ open class TouchImageView @JvmOverloads constructor(
         doubleTapListener = l
     }
 
-    override fun setImageResource(resId: Int) {
-        super.setImageResource(resId)
-        savePreviousImageValues()
-        fitImageToView()
-    }
-
-    override fun setImageBitmap(bm: Bitmap) {
-        super.setImageBitmap(bm)
-        savePreviousImageValues()
-        fitImageToView()
-    }
-
-    override fun setImageDrawable(drawable: Drawable?) {
-        super.setImageDrawable(drawable)
-        savePreviousImageValues()
-        fitImageToView()
-    }
-
-    override fun setImageURI(uri: Uri?) {
-        super.setImageURI(uri)
-        savePreviousImageValues()
-        fitImageToView()
-    }
-
     override fun setScaleType(type: ScaleType?) {
         if (type == ScaleType.FIT_START || type == ScaleType.FIT_END) {
             throw UnsupportedOperationException("TouchImageView does not support FIT_START or FIT_END")
@@ -221,7 +197,7 @@ open class TouchImageView @JvmOverloads constructor(
      * Save the current nextMatrix and view dimensions
      * in the prevMatrix and prevView variables.
      */
-    private fun savePreviousImageValues() {
+    protected override fun savePreviousImageValues() {
         if (nextMatrix != null && viewHeight != 0 && viewWidth != 0) {
             nextMatrix?.getValues(m)
             prevMatrix?.setValues(m)
@@ -436,7 +412,7 @@ open class TouchImageView @JvmOverloads constructor(
      * it is made to fit the screen according to the dimensions of the previous image nextMatrix. This
      * allows the image to maintain its zoom after rotation.
      */
-    private fun fitImageToView() {
+    protected override fun fitImageToView() {
         val drawable = drawable
         if (drawable == null || drawable.intrinsicWidth == 0 || drawable.intrinsicHeight == 0) {
             return

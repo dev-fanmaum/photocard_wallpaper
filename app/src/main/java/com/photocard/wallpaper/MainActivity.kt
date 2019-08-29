@@ -2,6 +2,7 @@ package com.photocard.wallpaper
 
 import android.app.Activity
 import android.os.Bundle
+import com.bumptech.glide.Glide
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : Activity() {
@@ -13,6 +14,12 @@ class MainActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        img.setImageGlide(
+            Glide.with(this)
+                .load(imageUri)
+                .centerCrop()
+        )
 
         img.saveAndCutBitmap()
 
