@@ -22,8 +22,7 @@ class WallPaperSupportImageView @JvmOverloads constructor(
         val viewTopTrans = m[Matrix.MTRANS_X]
         val viewLeftTrans = m[Matrix.MTRANS_X]
 
-
-       /* val bitmap = Bitmap.createBitmap(
+        val bitmap = Bitmap.createBitmap(
             drawable.intrinsicWidth,
             drawable.intrinsicHeight,
             Bitmap.Config.ARGB_8888
@@ -40,7 +39,7 @@ class WallPaperSupportImageView @JvmOverloads constructor(
         }
 
         WallpaperManager.getInstance(context)
-            .setBitmap(bitmap)*/
+            .setBitmap(bitmap)
 
 
     }

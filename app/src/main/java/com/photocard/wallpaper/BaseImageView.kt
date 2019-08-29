@@ -15,8 +15,12 @@ import android.view.ScaleGestureDetector
 import android.widget.ImageView
 import com.bumptech.glide.RequestBuilder
 import com.photocard.wallpaper.util.CompatScroller
-import kotlinx.coroutines.*
-import java.lang.Runnable
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.FileNotFoundException
+import java.util.concurrent.ExecutionException
 
 abstract class BaseImageView @JvmOverloads constructor(
     context: Context,
@@ -101,15 +105,30 @@ abstract class BaseImageView @JvmOverloads constructor(
         fitImageToView()
     }
 
+    @SuppressLint("CheckResult")
     fun setImageGlide(glide: RequestBuilder<Drawable>) {
-
-        val imageLoadAsync = CoroutineScope(Dispatchers.IO).async { glide.submit().get() }
-
-        CoroutineScope(Dispatchers.IO).launch {
-            val drawable = imageLoadAsync.await()
-            withContext(Dispatchers.Main) { setImageDrawable(drawable) }
+        GlobalScope.launch {
+            val drawableImage = withContext(Dispatchers.IO) {
+                try {
+                    glide.submit()
+                        .get()
+                } catch (e: FileNotFoundException) {
+                    null
+                } catch (e: ExecutionException) {
+                    null
+                }
+            }
+            withContext(Dispatchers.Main) {
+                drawableImage?.run { setImageDrawable(this) } ?: run {
+                    if (glide.errorPlaceholder != null) {
+                        setImageDrawable(glide.errorPlaceholder)
+                    } else {
+                        scaleType = ScaleType.CENTER
+                        setImageResource(android.R.drawable.ic_menu_close_clear_cancel)
+                    }
+                }
+            }
         }
-
     }
 
     protected abstract fun fixTrans()
