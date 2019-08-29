@@ -2,9 +2,12 @@ package com.photocard.wallpaper
 
 import android.app.WallpaperManager
 import android.content.Context
-import android.graphics.*
-import android.graphics.drawable.BitmapDrawable
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Matrix
 import android.util.AttributeSet
+import androidx.annotation.RequiresPermission
+import java.util.jar.Manifest
 
 class WallPaperSupportImageView @JvmOverloads constructor(
     context: Context,
@@ -13,6 +16,7 @@ class WallPaperSupportImageView @JvmOverloads constructor(
 ) : TouchImageView(context, attributeSet, defStyleAttribute) {
 
 
+    @RequiresPermission(android.Manifest.permission.SET_WALLPAPER)
     fun saveAndCutBitmap() {
 
         val viewTopTrans = m[Matrix.MTRANS_X]
