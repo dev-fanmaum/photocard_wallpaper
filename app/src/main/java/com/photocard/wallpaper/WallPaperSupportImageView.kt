@@ -4,6 +4,7 @@ import android.app.WallpaperManager
 import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
+import android.util.Log
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -24,8 +25,8 @@ class WallPaperSupportImageView @JvmOverloads constructor(
 
         CoroutineScope(Dispatchers.Main).launch {
 
-            val viewTopTrans = abs(m[Matrix.MTRANS_X].toInt())
             val viewLeftTrans = abs(m[Matrix.MTRANS_X].toInt())
+            val viewTopTrans = abs(m[Matrix.MTRANS_Y].toInt())
 
             val bitmap = Bitmap.createBitmap(
                 drawable.intrinsicWidth,
@@ -43,20 +44,41 @@ class WallPaperSupportImageView @JvmOverloads constructor(
             }
 
             val resizeBitmap =
-                Bitmap.createScaledBitmap(bitmap, getImageWidth().toInt(), getImageHeight().toInt(), true)
+                Bitmap.createScaledBitmap(
+                    bitmap,
+                    getImageWidth().toInt(),
+                    getImageHeight().toInt(),
+                    true
+                )
 
-            val cropBitmap = Bitmap.createBitmap(resizeBitmap, viewLeftTrans, viewTopTrans, viewTopTrans + 300, viewLeftTrans+ 300)
 
-            withContext(Dispatchers.Main){
+            Log.i(
+                "BitmapSizePrint", """
+            |
+            |Width = ${drawable.intrinsicWidth},
+            |Height = ${drawable.intrinsicHeight}
+            |reSizeBitmap Width = ${getImageWidth().toInt()},
+            |reSizeBitmap Height = ${getImageHeight().toInt()}
+            |LEFT = ${viewLeftTrans + deviceForegroundBoxSize.left.toInt()},
+            |TOP = ${viewTopTrans + deviceForegroundBoxSize.top.toInt()},
+            |RIGHT = ${viewLeftTrans + deviceForegroundBoxSize.right.toInt()},
+            |BOTTOM = ${viewTopTrans + deviceForegroundBoxSize.bottom.toInt()}
+            |viewLeftTrans = $viewLeftTrans
+            |viewTopTrans = $viewTopTrans"""
+            )
+            val cropBitmap = Bitmap.createBitmap(
+                resizeBitmap,
+                viewLeftTrans + deviceForegroundBoxSize.left.toInt(),
+                viewTopTrans + deviceForegroundBoxSize.top.toInt(),
+                viewLeftTrans + deviceForegroundBoxSize.right.toInt(),
+                viewTopTrans + deviceForegroundBoxSize.bottom.toInt()
+            )
 
-                WallpaperManager.getInstance(context)
-//            .setBitmap(Bitmap.createBitmap(bitmap, 100, 100, 300, 300))
-                    .setBitmap(cropBitmap)
-
+            withContext(Dispatchers.Main) {
+                WallpaperManager.getInstance(context).setBitmap(cropBitmap)
             }
 
         }
-
 
 
     }

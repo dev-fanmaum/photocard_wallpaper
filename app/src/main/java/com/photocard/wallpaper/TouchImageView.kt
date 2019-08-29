@@ -13,6 +13,8 @@ import android.view.*
 import android.view.animation.AccelerateDecelerateInterpolator
 import androidx.annotation.IntDef
 import com.photocard.wallpaper.vo.ZoomVariables
+import kotlin.math.max
+import kotlin.math.min
 
 /**
  * Created by MyInnos on 28-11-2016.
@@ -32,8 +34,10 @@ open class TouchImageView @JvmOverloads constructor(
     // saved prior to the screen rotating.
     //
 
-    private val deviceWidth: Float
-    private val deviceHeight: Float
+    protected val deviceWidth: Float
+    protected val deviceHeight: Float
+
+    protected val deviceForegroundBoxSize: RectF
 
     private var nextMatrix: Matrix? = Matrix()
     private var prevMatrix: Matrix? = Matrix()
@@ -67,7 +71,8 @@ open class TouchImageView @JvmOverloads constructor(
                 throw UnsupportedOperationException("getZoomedRect() not supported with FIT_XY")
             }
             val topLeft = transformCoordTouchToBitmap(0f, 0f, true)
-            val bottomRight = transformCoordTouchToBitmap(viewWidth.toFloat(), viewHeight.toFloat(), true)
+            val bottomRight =
+                transformCoordTouchToBitmap(viewWidth.toFloat(), viewHeight.toFloat(), true)
 
             val w = drawable.intrinsicWidth.toFloat()
             val h = drawable.intrinsicHeight.toFloat()
@@ -131,7 +136,11 @@ open class TouchImageView @JvmOverloads constructor(
             val drawableWidth = drawable.intrinsicWidth
             val drawableHeight = drawable.intrinsicHeight
 
-            val point = transformCoordTouchToBitmap((viewWidth / 2).toFloat(), (viewHeight / 2).toFloat(), true)
+            val point = transformCoordTouchToBitmap(
+                (viewWidth / 2).toFloat(),
+                (viewHeight / 2).toFloat(),
+                true
+            )
             point.x /= drawableWidth.toFloat()
             point.y /= drawableHeight.toFloat()
             return point
@@ -141,10 +150,15 @@ open class TouchImageView @JvmOverloads constructor(
         super.setClickable(true)
 
         val size = Point()
-        (context.getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay.getSize(size)
+        (context.getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay.getSize(
+            size
+        )
 
         deviceWidth = size.x.toFloat()
         deviceHeight = size.y.toFloat()
+
+        deviceForegroundBoxSize =
+            RectF(deviceWidth * .1f, deviceHeight * .1f, deviceWidth * .9f, deviceHeight * .9f)
 
         mScaleDetector = ScaleGestureDetector(context, ScaleListener())
         mGestureDetector = GestureDetector(context, GestureListener())
@@ -339,8 +353,8 @@ open class TouchImageView @JvmOverloads constructor(
         val transX = m[Matrix.MTRANS_X]
         val transY = m[Matrix.MTRANS_Y]
 
-        val fixTransX = getFixTrans(transX, viewWidth.toFloat(), getImageWidth(), HORIZONTAL_DRAG)
-        val fixTransY = getFixTrans(transY, viewHeight.toFloat(), getImageHeight(), VERTICAL_DRAG)
+        val fixTransX = getFixTrans(transX, deviceWidth, getImageWidth(), HORIZONTAL_DRAG)
+        val fixTransY = getFixTrans(transY, deviceHeight, getImageHeight(), VERTICAL_DRAG)
 
         if (fixTransX != 0f || fixTransY != 0f) {
             nextMatrix?.postTranslate(fixTransX, fixTransY)
@@ -367,11 +381,19 @@ open class TouchImageView @JvmOverloads constructor(
         nextMatrix?.setValues(m)
     }
 
-    private fun getFixTrans(trans: Float, viewSize: Float, contentSize: Float, @DragPosition type: Int): Float {
-        val typeSize = if (type == HORIZONTAL_DRAG) viewWidth else viewHeight
+    private fun getFixTrans(
+        trans: Float,
+        viewSize: Float,
+        contentSize: Float, @DragPosition type: Int
+    ): Float {
+        val minTrans = -(viewSize * .1f + contentSize - viewSize)
+        val maxTrans = (viewSize * .1f)
 
-        val minTrans = -(typeSize * .1f + contentSize - viewSize)
-        val maxTrans = (typeSize * .1f)
+        Log.i("TestDrag", """
+            |trans = $trans
+            |minTrans = $minTrans
+            |maxTrans = $maxTrans
+            |Target = ${if (type == HORIZONTAL_DRAG) 'x' else 'y'}, """.trimIndent())
 
         return when {
             trans < minTrans -> -trans + minTrans
@@ -620,7 +642,12 @@ open class TouchImageView @JvmOverloads constructor(
             performLongClick()
         }
 
-        override fun onFling(e1: MotionEvent, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
+        override fun onFling(
+            e1: MotionEvent,
+            e2: MotionEvent,
+            velocityX: Float,
+            velocityY: Float
+        ): Boolean {
             //
             // If a previous fling is still active, it should be cancelled so that two flings
             // are not run simultaenously.
@@ -738,13 +765,23 @@ open class TouchImageView @JvmOverloads constructor(
             }
 
             if (animateToZoomBoundary) {
-                val doubleTap = DoubleTapZoom(targetZoom, (viewWidth / 2).toFloat(), (viewHeight / 2).toFloat(), true)
+                val doubleTap = DoubleTapZoom(
+                    targetZoom,
+                    (viewWidth / 2).toFloat(),
+                    (viewHeight / 2).toFloat(),
+                    true
+                )
                 compatPostOnAnimation(doubleTap)
             }
         }
     }
 
-    private fun scaleImage(deltaScale: Double, focusX: Float, focusY: Float, stretchImageToSuper: Boolean) {
+    private fun scaleImage(
+        deltaScale: Double,
+        focusX: Float,
+        focusY: Float,
+        stretchImageToSuper: Boolean
+    ) {
         var deltaScale = deltaScale
 
         val lowerScale: Float
@@ -897,8 +934,8 @@ open class TouchImageView @JvmOverloads constructor(
         var finalY = (y - transY) * origH / getImageHeight()
 
         if (clipToBitmap) {
-            finalX = Math.min(Math.max(finalX, 0f), origW)
-            finalY = Math.min(Math.max(finalY, 0f), origH)
+            finalX = min(max(finalX, 0f), origW)
+            finalY = min(max(finalY, 0f), origH)
         }
 
         return PointF(finalX, finalY)
@@ -963,7 +1000,7 @@ open class TouchImageView @JvmOverloads constructor(
 
         paint.strokeWidth = 4f
         paint.style = Paint.Style.STROKE
-        canvas.drawRect(deviceWidth * .1f, deviceHeight * .1f, deviceWidth * .9f, deviceHeight * .9f, paint)
+        canvas.drawRect(deviceForegroundBoxSize, paint)
     }
 
     companion object {
