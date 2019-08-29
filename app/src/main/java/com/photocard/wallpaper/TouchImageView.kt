@@ -3,8 +3,6 @@ package com.photocard.wallpaper
 import android.content.Context
 import android.content.res.Configuration
 import android.graphics.*
-import android.graphics.drawable.Drawable
-import android.net.Uri
 import android.os.Bundle
 import android.os.Parcelable
 import android.util.AttributeSet
@@ -388,12 +386,6 @@ open class TouchImageView @JvmOverloads constructor(
     ): Float {
         val minTrans = -(viewSize * .1f + contentSize - viewSize)
         val maxTrans = (viewSize * .1f)
-
-        Log.i("TestDrag", """
-            |trans = $trans
-            |minTrans = $minTrans
-            |maxTrans = $maxTrans
-            |Target = ${if (type == HORIZONTAL_DRAG) 'x' else 'y'}, """.trimIndent())
 
         return when {
             trans < minTrans -> -trans + minTrans
