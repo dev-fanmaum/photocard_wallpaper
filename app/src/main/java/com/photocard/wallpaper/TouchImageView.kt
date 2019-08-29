@@ -9,7 +9,6 @@ import android.util.AttributeSet
 import android.util.Log
 import android.view.*
 import android.view.animation.AccelerateDecelerateInterpolator
-import androidx.annotation.IntDef
 import com.photocard.wallpaper.vo.ZoomVariables
 import kotlin.math.max
 import kotlin.math.min
@@ -351,8 +350,19 @@ open class TouchImageView @JvmOverloads constructor(
         val transX = m[Matrix.MTRANS_X]
         val transY = m[Matrix.MTRANS_Y]
 
-        val fixTransX = getFixTrans(transX, deviceWidth, getImageWidth(), HORIZONTAL_DRAG)
-        val fixTransY = getFixTrans(transY, deviceHeight, getImageHeight(), VERTICAL_DRAG)
+        val fixTransX =
+            getFixTrans(
+                transX,
+                deviceForegroundBoxSize.left,
+                deviceForegroundBoxSize.right,
+                getImageWidth()
+            )
+        val fixTransY = getFixTrans(
+            transY,
+            deviceForegroundBoxSize.top,
+            deviceForegroundBoxSize.bottom,
+            getImageHeight()
+        )
 
         if (fixTransX != 0f || fixTransY != 0f) {
             nextMatrix?.postTranslate(fixTransX, fixTransY)
@@ -381,11 +391,12 @@ open class TouchImageView @JvmOverloads constructor(
 
     private fun getFixTrans(
         trans: Float,
-        viewSize: Float,
-        contentSize: Float, @DragPosition type: Int
+        minSize: Float,
+        maxSize: Float,
+        contentSize: Float
     ): Float {
-        val minTrans = -(viewSize * .1f + contentSize - viewSize)
-        val maxTrans = (viewSize * .1f)
+        val minTrans = -(minSize + contentSize - maxSize - minSize)
+        val maxTrans = (minSize)
 
         return when {
             trans < minTrans -> -trans + minTrans
@@ -1015,13 +1026,6 @@ open class TouchImageView @JvmOverloads constructor(
         private const val VIEW_HEIGHT = "viewHeight"
         private const val NEXT_MATRIX = "nextMatrix"
         private const val IMAGE_RENDERED = "imageRendered"
-
-        private const val VERTICAL_DRAG = 1
-        private const val HORIZONTAL_DRAG = 2
-
-        @IntDef(VERTICAL_DRAG, HORIZONTAL_DRAG)
-        @Retention(AnnotationRetention.SOURCE)
-        private annotation class DragPosition {}
 
     }
 }
