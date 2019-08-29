@@ -405,6 +405,8 @@ open class TouchImageView @JvmOverloads constructor(
         }
     }
 
+    private var initMeasureSettingFlag = true
+
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val drawable = drawable
         if (drawable == null || drawable.intrinsicWidth == 0 || drawable.intrinsicHeight == 0) {
@@ -430,6 +432,19 @@ open class TouchImageView @JvmOverloads constructor(
         // Fit content within view
         //
         fitImageToView()
+
+
+        if (initMeasureSettingFlag) {
+            normalizedScale = deviceForegroundBoxSize.let { size ->
+                max(
+                    (size.right - size.left) / viewWidth,
+                    (size.bottom - size.top) / viewHeight
+                )
+            }
+            minScale = normalizedScale
+            initMeasureSettingFlag = false
+        }
+
     }
 
     /**
@@ -762,6 +777,7 @@ open class TouchImageView @JvmOverloads constructor(
                 targetZoom = maxScale
                 animateToZoomBoundary = true
 
+                // FIXME : Pinch Zoom 사이즈 deviceForegroundBoxSize 적용하기.
             } else if (normalizedScale < minScale) {
                 targetZoom = minScale
                 animateToZoomBoundary = true

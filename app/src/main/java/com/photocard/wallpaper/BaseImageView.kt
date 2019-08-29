@@ -78,7 +78,6 @@ abstract class BaseImageView @JvmOverloads constructor(
 
     init {
         scaleType = ScaleType.CENTER_CROP
-
     }
 
     override fun setImageResource(resId: Int) {
