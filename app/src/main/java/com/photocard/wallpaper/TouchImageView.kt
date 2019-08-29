@@ -35,8 +35,8 @@ open class TouchImageView @JvmOverloads constructor(
     private val deviceWidth: Float
     private val deviceHeight: Float
 
-    private var nextMatrix: Matrix? = null
-    private var prevMatrix: Matrix? = null
+    private var nextMatrix: Matrix? = Matrix()
+    private var prevMatrix: Matrix? = Matrix()
 
     private var mScaleType: ScaleType? = null
 
@@ -44,7 +44,6 @@ open class TouchImageView @JvmOverloads constructor(
     private var onDrawReady: Boolean = false
 
     private var delayedZoomVariables: ZoomVariables? = null
-
 
 
     private val last = PointF()
@@ -149,9 +148,6 @@ open class TouchImageView @JvmOverloads constructor(
 
         mScaleDetector = ScaleGestureDetector(context, ScaleListener())
         mGestureDetector = GestureDetector(context, GestureListener())
-        nextMatrix = Matrix()
-        prevMatrix = Matrix()
-        normalizedScale = 1f
         if (mScaleType == null) {
             mScaleType = ScaleType.FIT_CENTER
         }
@@ -1017,7 +1013,6 @@ open class TouchImageView @JvmOverloads constructor(
 
         private const val VERTICAL_DRAG = 1
         private const val HORIZONTAL_DRAG = 2
-
 
         @IntDef(VERTICAL_DRAG, HORIZONTAL_DRAG)
         @Retention(AnnotationRetention.SOURCE)

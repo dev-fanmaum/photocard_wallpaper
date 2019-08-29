@@ -2,6 +2,7 @@ package com.photocard.wallpaper
 
 import android.app.Activity
 import android.os.Bundle
+import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : Activity() {
 
@@ -13,7 +14,7 @@ class MainActivity : Activity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-
+        img.saveAndCutBitmap()
 
         /*button1.setOnClickListener {
 

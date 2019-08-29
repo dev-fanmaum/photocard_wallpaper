@@ -23,8 +23,8 @@ abstract class BaseImageView @JvmOverloads constructor(
     // Scale of image ranges from minScale to maxScale, where minScale == 1
     // when the image is stretched to fit view.
     //
-    protected var normalizedScale: Float = 0.toFloat()
 
+    protected var normalizedScale: Float = 0.8f
     //
     // Size of view and previous view size (ie before rotation)
     //
@@ -65,6 +65,11 @@ abstract class BaseImageView @JvmOverloads constructor(
     protected fun compatPostOnAnimation(runnable: Runnable) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) postOnAnimation(runnable)
         else postDelayed(runnable, (1000 / 60).toLong())
+    }
+
+    init {
+        scaleType = ScaleType.CENTER_CROP
+
     }
 
     protected abstract fun fixTrans()
