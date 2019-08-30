@@ -34,7 +34,7 @@ open class TouchImageView @JvmOverloads constructor(
     protected val deviceWidth: Float
     protected val deviceHeight: Float
 
-    protected val deviceForegroundBoxSize: RectF
+    protected lateinit var deviceForegroundBoxSize: RectF
 
     private var nextMatrix: Matrix? = Matrix()
     private var prevMatrix: Matrix? = Matrix()
@@ -153,9 +153,6 @@ open class TouchImageView @JvmOverloads constructor(
 
         deviceWidth = size.x.toFloat()
         deviceHeight = size.y.toFloat()
-
-        deviceForegroundBoxSize =
-            RectF(deviceWidth * .1f, deviceHeight * .1f, deviceWidth * .9f, deviceHeight * .9f)
 
         mScaleDetector = ScaleGestureDetector(context, ScaleListener())
         mGestureDetector = GestureDetector(context, GestureListener())
@@ -346,6 +343,7 @@ open class TouchImageView @JvmOverloads constructor(
      * is out of bounds.
      */
     override fun fixTrans() {
+        if (initMeasureSettingFlag) return
         nextMatrix?.getValues(m)
         val transX = m[Matrix.MTRANS_X]
         val transY = m[Matrix.MTRANS_Y]
@@ -436,6 +434,27 @@ open class TouchImageView @JvmOverloads constructor(
 
 
         if (initMeasureSettingFlag) {
+
+
+            val viewToDeviceScaleSize =
+                min(
+                    viewWidth / deviceWidth,
+                    viewHeight / deviceHeight
+                )
+            val widthRatio = deviceWidth * viewToDeviceScaleSize * 0.9f
+            val heightRatio = deviceHeight * viewToDeviceScaleSize * 0.9f
+
+            val widthInterval = (viewWidth - widthRatio) * .5f
+            val heightInterval = (viewHeight - heightRatio) * .5f
+
+            deviceForegroundBoxSize =
+                RectF(
+                    widthInterval,
+                    heightInterval,
+                    widthRatio + widthInterval,
+                    heightRatio + heightInterval
+                )
+
             normalizedScale = deviceForegroundBoxSize.let { size ->
                 max(
                     (size.right - size.left) / viewWidth,
@@ -444,6 +463,7 @@ open class TouchImageView @JvmOverloads constructor(
             }
             minScale = normalizedScale
             initMeasureSettingFlag = false
+
         }
 
     }
