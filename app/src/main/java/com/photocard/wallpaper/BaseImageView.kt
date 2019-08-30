@@ -33,7 +33,7 @@ abstract class BaseImageView @JvmOverloads constructor(
     // when the image is stretched to fit view.
     //
 
-    protected var normalizedScale: Float = 0.8f
+    protected var normalizedScale: Float = 1f
     //
     // Size of view and previous view size (ie before rotation)
     //
