@@ -437,8 +437,8 @@ open class TouchImageView @JvmOverloads constructor(
                     viewWidth / deviceWidth,
                     viewHeight / deviceHeight
                 )
-            val widthRatio = deviceWidth * viewToDeviceScaleSize * OVERLAY_SCALE_SIZE
-            val heightRatio = deviceHeight * viewToDeviceScaleSize * OVERLAY_SCALE_SIZE
+            val widthRatio = deviceWidth * viewToDeviceScaleSize * (1 - OVERLAY_SCALE_SIZE)
+            val heightRatio = deviceHeight * viewToDeviceScaleSize * (1 - OVERLAY_SCALE_SIZE)
 
             val widthInterval = (viewWidth - widthRatio) * .5f
             val heightInterval = (viewHeight - heightRatio) * .5f
@@ -450,14 +450,10 @@ open class TouchImageView @JvmOverloads constructor(
                     widthRatio + widthInterval,
                     heightRatio + heightInterval
                 )
-
-            normalizedScale =
-                deviceForegroundBoxSize.let { size ->
-                    max(
-                        drawableWidth / (size.right - size.left),
-                        drawableHeight / (size.bottom - size.top)
-                    ) * (1 - (1 - OVERLAY_SCALE_SIZE) * 2)
-                }
+            // FIXME : Image, Overlay 이미지 비율 조정 값 수정하기.
+            val a = drawableWidth / (deviceForegroundBoxSize.right - deviceForegroundBoxSize.left)
+            val b = drawableHeight / (deviceForegroundBoxSize.bottom - deviceForegroundBoxSize.top)
+            normalizedScale = 1 - a
             minScale = normalizedScale
             initMeasureSettingFlag = false
 
@@ -1058,7 +1054,7 @@ open class TouchImageView @JvmOverloads constructor(
         private const val SUPER_MIN_MULTIPLIER = .75f
         private const val SUPER_MAX_MULTIPLIER = 1.25f
 
-        private const val OVERLAY_SCALE_SIZE = .9f
+        private const val OVERLAY_SCALE_SIZE = .1f
 
         private const val INSTANCE_STATE = "instanceState"
         private const val SAVE_SCALE = "saveScale"
