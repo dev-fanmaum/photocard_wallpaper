@@ -154,13 +154,9 @@ open class TouchImageView @JvmOverloads constructor(
         deviceWidth = size.x.toFloat()
         deviceHeight = size.y.toFloat()
 
-        mScaleDetector = ScaleGestureDetector(context, ScaleListener())
-        mGestureDetector = GestureDetector(context, GestureListener())
         if (mScaleType == null) {
             mScaleType = ScaleType.FIT_CENTER
         }
-        superMinScale = SUPER_MIN_MULTIPLIER * minScale
-        superMaxScale = SUPER_MAX_MULTIPLIER * maxScale
         imageMatrix = nextMatrix
         scaleType = ScaleType.MATRIX
         state = (State.NONE)
@@ -271,7 +267,7 @@ open class TouchImageView @JvmOverloads constructor(
      * Reset zoom and translation to initial state.
      */
     fun resetZoom() {
-        normalizedScale = 1f
+//        normalizedScale = 1f
         fitImageToView()
     }
 
@@ -441,8 +437,8 @@ open class TouchImageView @JvmOverloads constructor(
                     viewWidth / deviceWidth,
                     viewHeight / deviceHeight
                 )
-            val widthRatio = deviceWidth * viewToDeviceScaleSize * 0.9f
-            val heightRatio = deviceHeight * viewToDeviceScaleSize * 0.9f
+            val widthRatio = deviceWidth * viewToDeviceScaleSize * OVERLAY_SCALE_SIZE
+            val heightRatio = deviceHeight * viewToDeviceScaleSize * OVERLAY_SCALE_SIZE
 
             val widthInterval = (viewWidth - widthRatio) * .5f
             val heightInterval = (viewHeight - heightRatio) * .5f
@@ -455,14 +451,21 @@ open class TouchImageView @JvmOverloads constructor(
                     heightRatio + heightInterval
                 )
 
-            normalizedScale = deviceForegroundBoxSize.let { size ->
-                max(
-                    (size.right - size.left) / viewWidth,
-                    (size.bottom - size.top) / viewHeight
-                )
-            }
+            normalizedScale =
+                deviceForegroundBoxSize.let { size ->
+                    max(
+                        drawableWidth / (size.right - size.left),
+                        drawableHeight / (size.bottom - size.top)
+                    ) * (1 - (1 - OVERLAY_SCALE_SIZE) * 2)
+                }
             minScale = normalizedScale
             initMeasureSettingFlag = false
+
+            superMinScale = SUPER_MIN_MULTIPLIER * minScale
+            superMaxScale = SUPER_MAX_MULTIPLIER * maxScale
+
+            mScaleDetector = ScaleGestureDetector(context, ScaleListener())
+            mGestureDetector = GestureDetector(context, GestureListener())
 
         }
 
@@ -537,7 +540,7 @@ open class TouchImageView @JvmOverloads constructor(
             //
             nextMatrix?.setScale(scaleX, scaleY)
             nextMatrix?.postTranslate(redundantXSpace / 2, redundantYSpace / 2)
-            normalizedScale = 1f
+//            normalizedScale = 1f
 
         } else {
             //
@@ -712,9 +715,7 @@ open class TouchImageView @JvmOverloads constructor(
         }
 
         override fun onDoubleTapEvent(e: MotionEvent): Boolean =
-            if (doubleTapListener != null) {
-                doubleTapListener!!.onDoubleTapEvent(e)
-            } else false
+            doubleTapListener?.onDoubleTapEvent(e) ?: false
     }
 
     /**
@@ -809,6 +810,8 @@ open class TouchImageView @JvmOverloads constructor(
                     targetZoom,
                     (viewWidth / 2).toFloat(),
                     (viewHeight / 2).toFloat(),
+//                    viewWidth * .5f,
+//                    viewHeight * .5f,
                     true
                 )
                 compatPostOnAnimation(doubleTap)
@@ -1054,6 +1057,8 @@ open class TouchImageView @JvmOverloads constructor(
         //
         private const val SUPER_MIN_MULTIPLIER = .75f
         private const val SUPER_MAX_MULTIPLIER = 1.25f
+
+        private const val OVERLAY_SCALE_SIZE = .9f
 
         private const val INSTANCE_STATE = "instanceState"
         private const val SAVE_SCALE = "saveScale"
