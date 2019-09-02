@@ -18,15 +18,13 @@ class MainActivity : Activity(), WallPaperSupportImageView.WallPaperCallBack {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        img.setWallPaperCallBack(this)
-
         img.setImageGlide(
             Glide.with(this)
                 .load(imageUri)
         )
 
         button1.setOnClickListener {
-            img.saveAndCutBitmap()
+            img.saveAndCutBitmap(this)
         }
 
 

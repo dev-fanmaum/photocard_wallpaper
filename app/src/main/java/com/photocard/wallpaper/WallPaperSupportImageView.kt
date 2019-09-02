@@ -23,8 +23,6 @@ class WallPaperSupportImageView @JvmOverloads constructor(
         fun complete()
     }
 
-    private var callback: WallPaperCallBack? = null
-
     @Volatile
     private var checkWallPaperProcess = false
 
@@ -34,10 +32,9 @@ class WallPaperSupportImageView @JvmOverloads constructor(
     private val deviceSizeFromOverlayToWidthSize get() = (deviceForegroundBoxSize.right - deviceForegroundBoxSize.left).toInt()
     private val deviceSizeFromOverlayToHeightSize get() = (deviceForegroundBoxSize.bottom - deviceForegroundBoxSize.top).toInt()
 
-    @ExperimentalCoroutinesApi
     @RequiresPermission(android.Manifest.permission.SET_WALLPAPER)
     @Synchronized
-    fun saveAndCutBitmap() {
+    fun saveAndCutBitmap(callback: WallPaperCallBack) {
         if (checkWallPaperProcess) return
         checkWallPaperProcess = true
 
@@ -48,34 +45,35 @@ class WallPaperSupportImageView @JvmOverloads constructor(
         )
 
         val flow = flowOf(bitmap)
-            .flowOn(Dispatchers.Default)
+            .map(::drawBitmap)
             .map(::resizeBitmap)
             .map(::cropSizeBitmap)
-            .catch { bitmapToMapReferenceErrorCatch(it) }
+            .catch { bitmapToMapReferenceErrorCatch(it, callback) }
             .map(::userDeviceResize)
 
-        CoroutineScope(Dispatchers.Default).launch { flow.collect { setWallPaper(it) } }
+        CoroutineScope(Dispatchers.Default).launch { flow.collect { setWallPaper(it, callback) } }
 
     }
 
-    private suspend fun setWallPaper(bitmap: Bitmap) {
+    private suspend fun setWallPaper(bitmap: Bitmap, callback: WallPaperCallBack) {
         WallpaperManager.getInstance(context).setBitmap(bitmap)
         checkWallPaperProcess = false
-        withContext(Dispatchers.Main) { callback?.complete() }
+        withContext(Dispatchers.Main) { callback.complete() }
 
     }
 
-    private suspend fun resizeBitmap(bitmap: Bitmap): Bitmap {
+    private suspend fun drawBitmap(bitmap: Bitmap): Bitmap {
         val canvas = Canvas(bitmap)
         drawable.draw(canvas)
-
-        return Bitmap.createScaledBitmap(
-            bitmap,
-            getImageWidth().toInt(),
-            getImageHeight().toInt(),
-            true
-        )
+        return bitmap
     }
+
+    private suspend fun resizeBitmap(bitmap: Bitmap): Bitmap = Bitmap.createScaledBitmap(
+        bitmap,
+        getImageWidth().toInt(),
+        getImageHeight().toInt(),
+        true
+    )
 
     private suspend fun cropSizeBitmap(bitmap: Bitmap): Bitmap {
         val xSize = abs(viewLeftTrans - deviceForegroundBoxSize.left.toInt())
@@ -90,18 +88,14 @@ class WallPaperSupportImageView @JvmOverloads constructor(
         )
     }
 
-    private suspend fun bitmapToMapReferenceErrorCatch(e: Throwable) {
-        withContext(Dispatchers.Main) { callback?.error(e) }
+    private suspend fun bitmapToMapReferenceErrorCatch(e: Throwable, callback: WallPaperCallBack) {
+        withContext(Dispatchers.Main) { callback.error(e) }
         checkWallPaperProcess = false
         e.printStackTrace()
     }
 
     private suspend fun userDeviceResize(bitmap: Bitmap): Bitmap =
         Bitmap.createScaledBitmap(bitmap, deviceWidth.toInt(), deviceHeight.toInt(), true)
-
-    fun setWallPaperCallBack(callBack: WallPaperCallBack) {
-        this.callback = callBack
-    }
 
 }
 
