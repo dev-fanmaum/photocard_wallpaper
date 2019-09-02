@@ -154,13 +154,20 @@ open class TouchImageView @JvmOverloads constructor(
         deviceWidth = size.x.toFloat()
         deviceHeight = size.y.toFloat()
 
-        if (mScaleType == null) {
-            mScaleType = ScaleType.FIT_CENTER
-        }
         imageMatrix = nextMatrix
         scaleType = ScaleType.MATRIX
         state = (State.NONE)
         onDrawReady = false
+
+        normalizedScale = 1f
+
+        minScale = normalizedScale
+
+        superMinScale = SUPER_MIN_MULTIPLIER * minScale
+        superMaxScale = SUPER_MAX_MULTIPLIER * maxScale
+
+        mScaleDetector = ScaleGestureDetector(context, ScaleListener())
+        mGestureDetector = GestureDetector(context, GestureListener())
         super.setOnTouchListener(PrivateOnTouchListener())
     }
 
@@ -450,19 +457,8 @@ open class TouchImageView @JvmOverloads constructor(
                     widthRatio + widthInterval,
                     heightRatio + heightInterval
                 )
-            // FIXME : Image, Overlay 이미지 비율 조정 값 수정하기.
-            val a = drawableWidth / (deviceForegroundBoxSize.right - deviceForegroundBoxSize.left)
-            val b = drawableHeight / (deviceForegroundBoxSize.bottom - deviceForegroundBoxSize.top)
-            normalizedScale = 1 - a
-            minScale = normalizedScale
+
             initMeasureSettingFlag = false
-
-            superMinScale = SUPER_MIN_MULTIPLIER * minScale
-            superMaxScale = SUPER_MAX_MULTIPLIER * maxScale
-
-            mScaleDetector = ScaleGestureDetector(context, ScaleListener())
-            mGestureDetector = GestureDetector(context, GestureListener())
-
         }
 
     }
@@ -473,6 +469,7 @@ open class TouchImageView @JvmOverloads constructor(
      * allows the image to maintain its zoom after rotation.
      */
     protected override fun fitImageToView() {
+        if (initMeasureSettingFlag) return
         val drawable = drawable
         if (drawable == null || drawable.intrinsicWidth == 0 || drawable.intrinsicHeight == 0) {
             return
@@ -484,44 +481,10 @@ open class TouchImageView @JvmOverloads constructor(
         val drawableWidth = drawable.intrinsicWidth
         val drawableHeight = drawable.intrinsicHeight
 
-        //
-        // Scale image for view
-        //
-        var scaleX = viewWidth.toFloat() / drawableWidth
-        var scaleY = viewHeight.toFloat() / drawableHeight
-
-        when (mScaleType) {
-            ScaleType.CENTER -> {
-                scaleX = 1f
-                scaleY = scaleX
-            }
-
-            ScaleType.CENTER_CROP -> {
-                scaleX = Math.max(scaleX, scaleY)
-                scaleY = scaleX
-            }
-
-            ScaleType.CENTER_INSIDE -> {
-                scaleX = Math.min(1f, Math.min(scaleX, scaleY))
-                scaleY = scaleX
-                scaleX = Math.min(scaleX, scaleY)
-                scaleY = scaleX
-            }
-
-            ScaleType.FIT_CENTER -> {
-                scaleX = Math.min(scaleX, scaleY)
-                scaleY = scaleX
-            }
-
-            ScaleType.FIT_XY -> {
-            }
-
-            else ->
-                //
-                // FIT_START and FIT_END not supported
-                //
-                throw UnsupportedOperationException("TouchImageView does not support FIT_START or FIT_END")
-        }
+        val xValue = (deviceForegroundBoxSize.right - deviceForegroundBoxSize.left) / drawableWidth
+        val yValue = (deviceForegroundBoxSize.bottom - deviceForegroundBoxSize.top) / drawableHeight
+        scaleX = max(xValue, yValue)
+        scaleY = scaleX
 
         //
         // Center the image

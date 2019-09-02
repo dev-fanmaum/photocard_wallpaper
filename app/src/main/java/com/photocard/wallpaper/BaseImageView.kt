@@ -76,10 +76,6 @@ abstract class BaseImageView @JvmOverloads constructor(
         else postDelayed(runnable, (1000 / 60).toLong())
     }
 
-    init {
-        scaleType = ScaleType.CENTER_CROP
-    }
-
     override fun setImageResource(resId: Int) {
         super.setImageResource(resId)
         savePreviousImageValues()
