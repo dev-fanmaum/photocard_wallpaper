@@ -5,6 +5,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Matrix
+import android.graphics.Paint
 import android.util.AttributeSet
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.*
@@ -96,6 +97,16 @@ class WallPaperSupportImageView @JvmOverloads constructor(
 
     private suspend fun userDeviceResize(bitmap: Bitmap): Bitmap =
         Bitmap.createScaledBitmap(bitmap, deviceWidth.toInt(), deviceHeight.toInt(), true)
+
+    override fun onDrawForeground(canvas: Canvas) {
+        super.onDrawForeground(canvas)
+        val paint = Paint().apply {
+            strokeWidth = 4f
+            style = Paint.Style.STROKE
+        }
+
+        canvas.drawRect(deviceForegroundBoxSize, paint)
+    }
 
 }
 

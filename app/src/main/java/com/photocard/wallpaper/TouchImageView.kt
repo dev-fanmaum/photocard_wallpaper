@@ -766,10 +766,8 @@ open class TouchImageView @JvmOverloads constructor(
             if (animateToZoomBoundary) {
                 val doubleTap = DoubleTapZoom(
                     targetZoom,
-                    (viewWidth / 2).toFloat(),
-                    (viewHeight / 2).toFloat(),
-//                    viewWidth * .5f,
-//                    viewHeight * .5f,
+                    viewWidth * .5f,
+                    viewHeight * .5f,
                     true
                 )
                 compatPostOnAnimation(doubleTap)
@@ -993,16 +991,6 @@ open class TouchImageView @JvmOverloads constructor(
 
     override fun actionPointerUp(curr: PointF) {
         state = (State.NONE)
-    }
-
-    override fun onDrawForeground(canvas: Canvas) {
-        super.onDrawForeground(canvas)
-        val paint = Paint().apply {
-            strokeWidth = 4f
-            style = Paint.Style.STROKE
-        }
-
-        canvas.drawRect(deviceForegroundBoxSize, paint)
     }
 
     companion object {
