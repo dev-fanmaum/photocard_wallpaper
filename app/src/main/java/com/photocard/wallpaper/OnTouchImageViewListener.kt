@@ -1,5 +1,5 @@
 package com.photocard.wallpaper
 
-interface OnTouchImageViewLIstener {
+interface OnTouchImageViewListener {
     fun onMove()
 }

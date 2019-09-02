@@ -62,7 +62,7 @@ abstract class BaseImageView @JvmOverloads constructor(
     protected var mGestureDetector: GestureDetector? = null
     protected var doubleTapListener: GestureDetector.OnDoubleTapListener? = null
     protected var userTouchListener: OnTouchListener? = null
-    protected var touchImageViewListener: OnTouchImageViewLIstener? = null
+    protected var touchImageViewListener: OnTouchImageViewListener? = null
 
 
     protected enum class State { NONE, DRAG, ZOOM, FLING, ANIMATE_ZOOM }

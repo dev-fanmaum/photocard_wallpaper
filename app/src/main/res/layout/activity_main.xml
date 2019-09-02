@@ -13,7 +13,7 @@
             android:layout_height="300dp"
             android:src="@drawable/ic_launcher_background"
             app:overlay_drawable="@drawable/ic_launcher_background"
-            app:overlay_drawable_alpha="100"
+            app:overlay_drawable_alpha="200"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"

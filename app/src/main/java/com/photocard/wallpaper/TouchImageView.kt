@@ -174,7 +174,7 @@ open class TouchImageView @JvmOverloads constructor(
         userTouchListener = l
     }
 
-    fun setOnTouchImageViewListener(l: OnTouchImageViewLIstener) {
+    fun setOnTouchImageViewListener(l: OnTouchImageViewListener) {
         touchImageViewListener = l
     }
 
