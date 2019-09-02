@@ -427,16 +427,15 @@ open class TouchImageView @JvmOverloads constructor(
         //
         // Set view dimensions
         //
-        setMeasuredDimension(viewWidth, viewHeight)
+//        setMeasuredDimension(viewWidth, viewHeight)
+        setMeasuredDimension(viewWidth, (context.resources.displayMetrics.density * 300).toInt())
 
         //
         // Fit content within view
         //
         fitImageToView()
 
-
         if (initMeasureSettingFlag) {
-
 
             val viewToDeviceScaleSize =
                 min(
@@ -482,8 +481,8 @@ open class TouchImageView @JvmOverloads constructor(
 
         val xValue = (deviceForegroundBoxSize.right - deviceForegroundBoxSize.left) / drawableWidth
         val yValue = (deviceForegroundBoxSize.bottom - deviceForegroundBoxSize.top) / drawableHeight
-        scaleX = max(xValue, yValue)
-        scaleY = scaleX
+        val scaleX = max(xValue, yValue)
+        val scaleY = scaleX
 
         //
         // Center the image
@@ -563,11 +562,17 @@ open class TouchImageView @JvmOverloads constructor(
         imageMatrix = nextMatrix
     }
 
+
+    /**
+     * AT_MOST -> WarpSize
+     * Exactly -> matchSize
+     * Unspecified -> 계산해서 처리.
+     * */
     private fun setViewSize(mode: Int, size: Int, drawableWidth: Int): Int =
         when (mode) {
             MeasureSpec.EXACTLY -> size
 
-            MeasureSpec.AT_MOST -> Math.min(drawableWidth, size)
+            MeasureSpec.AT_MOST -> min(drawableWidth, size)
 
             MeasureSpec.UNSPECIFIED -> drawableWidth
 

@@ -89,6 +89,9 @@ class WallPaperSupportImageView @JvmOverloads constructor(
         if (checkWallPaperProcess) return
         checkWallPaperProcess = true
 
+        val transLeft = viewLeftTrans
+        val transTop = viewTopTrans
+
         val bitmap = Bitmap.createBitmap(
             drawable.intrinsicWidth,
             drawable.intrinsicHeight,
@@ -98,7 +101,7 @@ class WallPaperSupportImageView @JvmOverloads constructor(
         val flow = flowOf(bitmap)
             .map(::drawBitmap)
             .map(::resizeBitmap)
-            .map(::cropSizeBitmap)
+            .map { cropSizeBitmap(it, transLeft, transTop) }
             .catch { bitmapToMapReferenceErrorCatch(it, callback) }
             .map(::userDeviceResize)
 
@@ -126,9 +129,9 @@ class WallPaperSupportImageView @JvmOverloads constructor(
         true
     )
 
-    private suspend fun cropSizeBitmap(bitmap: Bitmap): Bitmap {
-        val xSize = abs(viewLeftTrans - deviceForegroundBoxSize.left.toInt())
-        val ySize = abs(viewTopTrans - deviceForegroundBoxSize.top.toInt())
+    private suspend fun cropSizeBitmap(bitmap: Bitmap, left: Int, top: Int): Bitmap {
+        val xSize = abs(left - deviceForegroundBoxSize.left.toInt())
+        val ySize = abs(top - deviceForegroundBoxSize.top.toInt())
 
         return Bitmap.createBitmap(
             bitmap,
