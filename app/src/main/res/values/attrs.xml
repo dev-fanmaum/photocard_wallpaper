@@ -1,25 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <declare-styleable name="CropImageView">
-        <!--Crop image view-->
-        <attr name="aspect_ratio_x" format="float"/>
-        <attr name="aspect_ratio_y" format="float"/>
-
-        <!--Overlay view-->
-        <attr name="show_oval_crop_frame" format="boolean"/>
-        <attr name="circle_dimmed_layer" format="boolean"/>
-        <attr name="dimmed_color" format="color"/>
-
-        <attr name="grid_stroke_size" format="dimension"/>
-        <attr name="grid_color" format="color"/>
-        <attr name="grid_row_count" format="integer"/>
-        <attr name="grid_column_count" format="integer"/>
-        <attr name="show_grid" format="boolean"/>
-
-        <attr name="frame_stroke_size" format="dimension"/>
-        <attr name="frame_color" format="color"/>
-        <attr name="show_frame" format="boolean"/>
+    <declare-styleable name="WallPaperSupportImageView">
+        <attr name="overlay_drawable" format="reference"/>
+        <attr name="overlay_drawable_alpha" format="integer"/>
     </declare-styleable>
 
 </resources>
