@@ -33,6 +33,7 @@ class MainActivity : Activity(), WallPaperSupportImageView.WallPaperCallBack {
     }
 
     override fun error(e: Throwable) {
+        Toast.makeText(this, "Fail", Toast.LENGTH_SHORT).show()
         e.printStackTrace()
     }
 

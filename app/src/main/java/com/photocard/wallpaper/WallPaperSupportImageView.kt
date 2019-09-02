@@ -51,11 +51,8 @@ class WallPaperSupportImageView @JvmOverloads constructor(
             .flowOn(Dispatchers.Default)
             .map(::resizeBitmap)
             .map(::cropSizeBitmap)
-            .catch {
-                kotlinx.coroutines.withContext(Dispatchers.Main) { callback?.error(it) }
-                checkWallPaperProcess = false
-                it.printStackTrace()
-            }.map(::userDeviceResize)
+            .catch { bitmapToMapReferenceErrorCatch(it) }
+            .map(::userDeviceResize)
 
         CoroutineScope(Dispatchers.Default).launch { flow.collect { setWallPaper(it) } }
 
@@ -94,6 +91,7 @@ class WallPaperSupportImageView @JvmOverloads constructor(
     }
 
     private suspend fun bitmapToMapReferenceErrorCatch(e: Throwable) {
+        withContext(Dispatchers.Main) { callback?.error(e) }
         checkWallPaperProcess = false
         e.printStackTrace()
     }
@@ -106,3 +104,4 @@ class WallPaperSupportImageView @JvmOverloads constructor(
     }
 
 }
+
