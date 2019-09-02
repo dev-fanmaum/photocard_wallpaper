@@ -150,7 +150,6 @@ open class TouchImageView @JvmOverloads constructor(
         (context.getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay.getSize(
             size
         )
-
         deviceWidth = size.x.toFloat()
         deviceHeight = size.y.toFloat()
 
@@ -998,10 +997,11 @@ open class TouchImageView @JvmOverloads constructor(
 
     override fun onDrawForeground(canvas: Canvas) {
         super.onDrawForeground(canvas)
-        val paint = Paint()
+        val paint = Paint().apply {
+            strokeWidth = 4f
+            style = Paint.Style.STROKE
+        }
 
-        paint.strokeWidth = 4f
-        paint.style = Paint.Style.STROKE
         canvas.drawRect(deviceForegroundBoxSize, paint)
     }
 

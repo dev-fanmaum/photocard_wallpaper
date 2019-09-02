@@ -6,13 +6,9 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Matrix
 import android.util.AttributeSet
-import android.util.Log
 import androidx.annotation.RequiresPermission
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.min
 
@@ -21,6 +17,13 @@ class WallPaperSupportImageView @JvmOverloads constructor(
     attributeSet: AttributeSet? = null,
     defStyleAttribute: Int = 0
 ) : TouchImageView(context, attributeSet, defStyleAttribute) {
+
+    interface WallPaperCallBack {
+        fun error(e: Throwable)
+        fun complete()
+    }
+
+    private var callback: WallPaperCallBack? = null
 
     @Volatile
     private var checkWallPaperProcess = false
@@ -31,38 +34,38 @@ class WallPaperSupportImageView @JvmOverloads constructor(
     private val deviceSizeFromOverlayToWidthSize get() = (deviceForegroundBoxSize.right - deviceForegroundBoxSize.left).toInt()
     private val deviceSizeFromOverlayToHeightSize get() = (deviceForegroundBoxSize.bottom - deviceForegroundBoxSize.top).toInt()
 
+    @ExperimentalCoroutinesApi
     @RequiresPermission(android.Manifest.permission.SET_WALLPAPER)
     @Synchronized
     fun saveAndCutBitmap() {
+        if (checkWallPaperProcess) return
+        checkWallPaperProcess = true
 
-        CoroutineScope(Dispatchers.Default).launch {
-            if (checkWallPaperProcess) cancel()
-            checkWallPaperProcess = true
+        val bitmap = Bitmap.createBitmap(
+            drawable.intrinsicWidth,
+            drawable.intrinsicHeight,
+            Bitmap.Config.ARGB_8888
+        )
 
-            val bitmap = Bitmap.createBitmap(
-                drawable.intrinsicWidth,
-                drawable.intrinsicHeight,
-                Bitmap.Config.ARGB_8888
-            )
+        val flow = flowOf(bitmap)
+            .flowOn(Dispatchers.Default)
+            .map(::resizeBitmap)
+            .map(::cropSizeBitmap)
+            .catch {
+                kotlinx.coroutines.withContext(Dispatchers.Main) { callback?.error(it) }
+                checkWallPaperProcess = false
+                it.printStackTrace()
+            }.map(::userDeviceResize)
 
-            flowOf(bitmap)
-                .map(::resizeBitmap)
-                .map(::cropSizeBitmap)
-                .catch {
-                    checkWallPaperProcess = false
-                    it.printStackTrace()
-                }
-                .flowOn(Dispatchers.Main)
-                .collect { setWallPaper(it) }
+        CoroutineScope(Dispatchers.Default).launch { flow.collect { setWallPaper(it) } }
 
-        }
     }
 
-    private fun setWallPaper(bitmap: Bitmap) {
+    private suspend fun setWallPaper(bitmap: Bitmap) {
         WallpaperManager.getInstance(context).setBitmap(bitmap)
         checkWallPaperProcess = false
+        withContext(Dispatchers.Main) { callback?.complete() }
 
-        Log.i("wallPaper", "Setting Complete")
     }
 
     private suspend fun resizeBitmap(bitmap: Bitmap): Bitmap {
@@ -88,6 +91,18 @@ class WallPaperSupportImageView @JvmOverloads constructor(
             min((getImageWidth() - xSize).toInt(), deviceSizeFromOverlayToWidthSize),
             min((getImageHeight() - ySize).toInt(), deviceSizeFromOverlayToHeightSize)
         )
+    }
+
+    private suspend fun bitmapToMapReferenceErrorCatch(e: Throwable) {
+        checkWallPaperProcess = false
+        e.printStackTrace()
+    }
+
+    private suspend fun userDeviceResize(bitmap: Bitmap): Bitmap =
+        Bitmap.createScaledBitmap(bitmap, deviceWidth.toInt(), deviceHeight.toInt(), true)
+
+    fun setWallPaperCallBack(callBack: WallPaperCallBack) {
+        this.callback = callBack
     }
 
 }
