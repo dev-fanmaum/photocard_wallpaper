@@ -54,6 +54,8 @@ abstract class BaseImageView @JvmOverloads constructor(
     protected var maxScale: Float = 3f
     protected var superMinScale: Float = 0.toFloat()
     protected var superMaxScale: Float = 0.toFloat()
+
+    @Volatile
     protected var m: FloatArray = FloatArray(9)
 
     protected var fling: Fling? = null

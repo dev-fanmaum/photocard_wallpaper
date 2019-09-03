@@ -1,6 +1,7 @@
 package com.photocard.wallpaper
 
 import android.app.WallpaperManager
+import android.app.WallpaperManager.FLAG_SYSTEM
 import android.content.Context
 import android.graphics.*
 import android.graphics.drawable.Drawable
@@ -12,6 +13,8 @@ import androidx.core.content.ContextCompat
 import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import kotlin.math.abs
 import kotlin.math.min
 
@@ -83,14 +86,17 @@ class WallPaperSupportImageView @JvmOverloads constructor(
     private val deviceSizeFromOverlayToWidthSize get() = (deviceForegroundBoxSize.right - deviceForegroundBoxSize.left).toInt()
     private val deviceSizeFromOverlayToHeightSize get() = (deviceForegroundBoxSize.bottom - deviceForegroundBoxSize.top).toInt()
 
-    @RequiresPermission(android.Manifest.permission.SET_WALLPAPER)
+    @RequiresPermission(allOf = [android.Manifest.permission.SET_WALLPAPER, android.Manifest.permission.SET_WALLPAPER_HINTS])
     @Synchronized
     fun saveAndCutBitmap(callback: WallPaperCallBack) {
         if (checkWallPaperProcess) return
         checkWallPaperProcess = true
+        nextMatrix?.getValues(m)
 
         val transLeft = viewLeftTrans
         val transTop = viewTopTrans
+//        val transLeft = last.x.toInt()
+//        val transTop = last.y.toInt()
 
         val bitmap = Bitmap.createBitmap(
             drawable.intrinsicWidth,
@@ -110,7 +116,21 @@ class WallPaperSupportImageView @JvmOverloads constructor(
     }
 
     private suspend fun setWallPaper(bitmap: Bitmap, callback: WallPaperCallBack) {
-        WallpaperManager.getInstance(context).setBitmap(bitmap)
+        val wallPaperManager = WallpaperManager.getInstance(context)
+
+        wallPaperManager.setBitmap(bitmap)
+
+        /*val bos = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.PNG, 0, bos)
+        val bitmapData = bos.toByteArray()
+        val bs = ByteArrayInputStream(bitmapData)
+        wallPaperManager.setStream(bs)*/
+
+        wallPaperManager.suggestDesiredDimensions(
+            deviceWidth.toInt(),
+            deviceHeight.toInt()
+        )
+
         checkWallPaperProcess = false
         withContext(Dispatchers.Main) { callback.complete() }
 

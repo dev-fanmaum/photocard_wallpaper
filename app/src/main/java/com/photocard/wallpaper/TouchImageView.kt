@@ -1,5 +1,6 @@
 package com.photocard.wallpaper
 
+import android.app.WallpaperManager
 import android.content.Context
 import android.content.res.Configuration
 import android.graphics.*
@@ -36,8 +37,9 @@ open class TouchImageView @JvmOverloads constructor(
 
     protected lateinit var deviceForegroundBoxSize: RectF
 
-    private var nextMatrix: Matrix? = Matrix()
-    private var prevMatrix: Matrix? = Matrix()
+    @Volatile
+    protected var nextMatrix: Matrix? = Matrix()
+    protected var prevMatrix: Matrix? = Matrix()
 
     private var mScaleType: ScaleType? = null
 
@@ -147,7 +149,10 @@ open class TouchImageView @JvmOverloads constructor(
         super.setClickable(true)
 
         val size = Point()
-        (context.getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay.getSize(
+        (context.getSystemService(Context.WINDOW_SERVICE) as WindowManager).apply {
+            layoutParams = WindowManager.LayoutParams()
+                .apply { type = WindowManager.LayoutParams.TYPE_WALLPAPER }
+        }.defaultDisplay.getSize(
             size
         )
         deviceWidth = size.x.toFloat()
@@ -364,10 +369,10 @@ open class TouchImageView @JvmOverloads constructor(
                 deviceForegroundBoxSize.bottom,
                 getImageHeight()
             )
+        nextMatrix?.postTranslate(fixTransX, fixTransY)
 
-        if (fixTransX != 0f || fixTransY != 0f) {
-            nextMatrix?.postTranslate(fixTransX, fixTransY)
-        }
+//        if (fixTransX != 0f || fixTransY != 0f) {
+//        }
     }
 
     /**
