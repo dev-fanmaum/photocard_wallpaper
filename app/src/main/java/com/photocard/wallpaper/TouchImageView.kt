@@ -65,9 +65,9 @@ open class TouchImageView @JvmOverloads constructor(
             if (mScaleType == ScaleType.FIT_XY) {
                 throw UnsupportedOperationException("getZoomedRect() not supported with FIT_XY")
             }
-            val topLeft = transformCoordTouchToBitmap(0f, 0f, true)
+            val topLeft = transformCoordinateTouchToBitmap(0f, 0f, true)
             val bottomRight =
-                transformCoordTouchToBitmap(viewWidth.toFloat(), viewHeight.toFloat(), true)
+                transformCoordinateTouchToBitmap(viewWidth.toFloat(), viewHeight.toFloat(), true)
 
             val w = drawable.intrinsicWidth.toFloat()
             val h = drawable.intrinsicHeight.toFloat()
@@ -131,7 +131,7 @@ open class TouchImageView @JvmOverloads constructor(
             val drawableWidth = drawable.intrinsicWidth
             val drawableHeight = drawable.intrinsicHeight
 
-            val point = transformCoordTouchToBitmap(
+            val point = transformCoordinateTouchToBitmap(
                 (viewWidth / 2).toFloat(),
                 (viewHeight / 2).toFloat(),
                 true
@@ -209,7 +209,7 @@ open class TouchImageView @JvmOverloads constructor(
      * in the prevMatrix and prevView variables.
      */
     override fun savePreviousImageValues() {
-        if (nextMatrix != null && viewHeight != 0 && viewWidth != 0) {
+        if (viewHeight != 0 && viewWidth != 0) {
             nextMatrix.getValues(m)
             prevMatrix.setValues(m)
             prevMatchViewHeight = matchViewHeight
@@ -383,11 +383,11 @@ open class TouchImageView @JvmOverloads constructor(
         fixTrans()
         nextMatrix.getValues(m)
         if (getImageWidth() < viewWidth) {
-            m[Matrix.MTRANS_X] = (viewWidth - getImageWidth()) / 2
+            m[Matrix.MTRANS_X] = (viewWidth - getImageWidth()) * .5f
         }
 
         if (getImageHeight() < viewHeight) {
-            m[Matrix.MTRANS_Y] = (viewHeight - getImageHeight()) / 2
+            m[Matrix.MTRANS_Y] = (viewHeight - getImageHeight()) * .5f
         }
         nextMatrix.setValues(m)
     }
@@ -841,7 +841,7 @@ open class TouchImageView @JvmOverloads constructor(
             state = (State.ANIMATE_ZOOM)
             startTime = System.currentTimeMillis()
             this.startZoom = normalizedScale
-            val bitmapPoint = transformCoordTouchToBitmap(focusX, focusY, false)
+            val bitmapPoint = transformCoordinateTouchToBitmap(focusX, focusY, false)
             this.bitmapX = bitmapPoint.x
             this.bitmapY = bitmapPoint.y
 
@@ -931,7 +931,11 @@ open class TouchImageView @JvmOverloads constructor(
      * to the bounds of the bitmap size.
      * @return Coordinates of the point touched, in the coordinate system of the original drawable.
      */
-    private fun transformCoordTouchToBitmap(x: Float, y: Float, clipToBitmap: Boolean): PointF {
+    private fun transformCoordinateTouchToBitmap(
+        x: Float,
+        y: Float,
+        clipToBitmap: Boolean
+    ): PointF {
         nextMatrix.getValues(m)
         val origW = drawable.intrinsicWidth.toFloat()
         val origH = drawable.intrinsicHeight.toFloat()
@@ -949,7 +953,7 @@ open class TouchImageView @JvmOverloads constructor(
     }
 
     /**
-     * Inverse of transformCoordTouchToBitmap. This function will transform the coordinates in the
+     * Inverse of transformCoordinateTouchToBitmap. This function will transform the coordinates in the
      * drawable's coordinate system to the view's coordinate system.
      *
      * @param bx x-coordinate in original bitmap coordinate system
