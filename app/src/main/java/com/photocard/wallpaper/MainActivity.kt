@@ -1,8 +1,13 @@
 package com.photocard.wallpaper
 
 import android.app.Activity
+import android.content.Context
+import android.os.Build
 import android.os.Bundle
+import android.util.Log
+import android.view.WindowManager
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import com.bumptech.glide.Glide
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -14,6 +19,7 @@ class MainActivity : Activity(), WallPaperSupportImageView.WallPaperCallBack {
 //        "http://cdnetphoto.appphotocard.com/289/21/HASH_2a51b783bb6a53606aa6bffd9bd9a1b851d95369e7d1cc0d36bb92b8a2701dfe.png"
         "http://cdnetphoto.appphotocard.com/289/21/HASH_433c62ea5ed0c9bdfbd702d55e59236517ad31dd71dbd21874b9915ecefd9709.png"
 
+    @RequiresApi(Build.VERSION_CODES.P)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -27,6 +33,16 @@ class MainActivity : Activity(), WallPaperSupportImageView.WallPaperCallBack {
             img.saveAndCutBitmap(this)
         }
 
+
+        cutoutCheckButton.setOnClickListener {
+            window.decorView?.rootWindowInsets?.displayCutout?.let {
+                Log.i(
+                    "cutOutTest", """CutoutRectPrint
+                    |boundingRects = ${it.boundingRects}
+                """.trimMargin()
+                )
+            }
+        }
 
     }
 

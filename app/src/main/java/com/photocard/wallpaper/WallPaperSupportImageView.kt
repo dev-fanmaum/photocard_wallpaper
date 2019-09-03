@@ -5,8 +5,10 @@ import android.app.WallpaperManager.FLAG_SYSTEM
 import android.content.Context
 import android.graphics.*
 import android.graphics.drawable.Drawable
+import android.os.Build
 import android.util.AttributeSet
 import androidx.annotation.IntRange
+import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.content.ContextCompat
@@ -28,6 +30,12 @@ class WallPaperSupportImageView @JvmOverloads constructor(
         fun error(e: Throwable)
         fun complete()
     }
+
+
+    private val notchInfoVaule =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) rootWindowInsets.displayCutout?.run { boundingRects }
+        else null
+
 
     private val overlayDrawable: Drawable?
 
