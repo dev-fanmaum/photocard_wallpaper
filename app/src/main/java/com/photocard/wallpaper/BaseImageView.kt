@@ -55,6 +55,10 @@ abstract class BaseImageView @JvmOverloads constructor(
     protected var superMinScale: Float = 0.toFloat()
     protected var superMaxScale: Float = 0.toFloat()
 
+
+    protected val nextMatrix: Matrix? = Matrix()
+    protected val prevMatrix: Matrix? = Matrix()
+
     @Volatile
     protected var m: FloatArray = FloatArray(9)
 
