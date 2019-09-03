@@ -91,12 +91,10 @@ class WallPaperSupportImageView @JvmOverloads constructor(
     fun saveAndCutBitmap(callback: WallPaperCallBack) {
         if (checkWallPaperProcess) return
         checkWallPaperProcess = true
-        nextMatrix?.getValues(m)
+        nextMatrix.getValues(m)
 
         val transLeft = viewLeftTrans
         val transTop = viewTopTrans
-//        val transLeft = last.x.toInt()
-//        val transTop = last.y.toInt()
 
         val bitmap = Bitmap.createBitmap(
             drawable.intrinsicWidth,

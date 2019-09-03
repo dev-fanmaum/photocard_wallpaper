@@ -210,8 +210,8 @@ open class TouchImageView @JvmOverloads constructor(
      */
     override fun savePreviousImageValues() {
         if (nextMatrix != null && viewHeight != 0 && viewWidth != 0) {
-            nextMatrix?.getValues(m)
-            prevMatrix?.setValues(m)
+            nextMatrix.getValues(m)
+            prevMatrix.setValues(m)
             prevMatchViewHeight = matchViewHeight
             prevMatchViewWidth = matchViewWidth
             prevViewHeight = viewHeight
@@ -227,7 +227,7 @@ open class TouchImageView @JvmOverloads constructor(
         bundle.putFloat(MATCH_VIEW_WIDTH, matchViewWidth)
         bundle.putInt(VIEW_WIDTH, viewWidth)
         bundle.putInt(VIEW_HEIGHT, viewHeight)
-        nextMatrix?.getValues(m)
+        nextMatrix.getValues(m)
         bundle.putFloatArray(NEXT_MATRIX, m)
         bundle.putBoolean(IMAGE_RENDERED, imageRenderedAtLeastOnce)
         return bundle
@@ -237,7 +237,7 @@ open class TouchImageView @JvmOverloads constructor(
         if (state is Bundle) {
             normalizedScale = state.getFloat(INSTANCE_STATE)
             m = state.getFloatArray(SAVE_SCALE) ?: floatArrayOf()
-            prevMatrix?.setValues(m)
+            prevMatrix.setValues(m)
             prevMatchViewHeight = state.getFloat(MATCH_VIEW_HEIGHT)
             prevMatchViewWidth = state.getFloat(MATCH_VIEW_WIDTH)
             prevViewHeight = state.getInt(VIEW_WIDTH)
@@ -311,10 +311,10 @@ open class TouchImageView @JvmOverloads constructor(
         }
         resetZoom()
         scaleImage(scale.toDouble(), (viewWidth / 2).toFloat(), (viewHeight / 2).toFloat(), true)
-        nextMatrix?.getValues(m)
+        nextMatrix.getValues(m)
         m[Matrix.MTRANS_X] = -(focusX * getImageWidth() - viewWidth * 0.5f)
         m[Matrix.MTRANS_Y] = -(focusY * getImageHeight() - viewHeight * 0.5f)
-        nextMatrix?.setValues(m)
+        nextMatrix.setValues(m)
         fixTrans()
         imageMatrix = nextMatrix
     }
@@ -347,7 +347,7 @@ open class TouchImageView @JvmOverloads constructor(
      */
     override fun fixTrans() {
         if (initMeasureSettingFlag) return
-        nextMatrix?.getValues(m)
+        nextMatrix.getValues(m)
         val transX = m[Matrix.MTRANS_X]
         val transY = m[Matrix.MTRANS_Y]
 
@@ -365,7 +365,7 @@ open class TouchImageView @JvmOverloads constructor(
                 deviceForegroundBoxSize.bottom,
                 getImageHeight()
             )
-        nextMatrix?.postTranslate(fixTransX, fixTransY)
+        nextMatrix.postTranslate(fixTransX, fixTransY)
 
 //        if (fixTransX != 0f || fixTransY != 0f) {
 //        }
@@ -381,7 +381,7 @@ open class TouchImageView @JvmOverloads constructor(
     // FIXME : 최소 사이즈 Scale 동작시 정렬되는 기준
     private fun fixScaleTrans() {
         fixTrans()
-        nextMatrix?.getValues(m)
+        nextMatrix.getValues(m)
         if (getImageWidth() < viewWidth) {
             m[Matrix.MTRANS_X] = (viewWidth - getImageWidth()) / 2
         }
@@ -389,7 +389,7 @@ open class TouchImageView @JvmOverloads constructor(
         if (getImageHeight() < viewHeight) {
             m[Matrix.MTRANS_Y] = (viewHeight - getImageHeight()) / 2
         }
-        nextMatrix?.setValues(m)
+        nextMatrix.setValues(m)
     }
 
     private fun getFixTrans(
@@ -483,7 +483,7 @@ open class TouchImageView @JvmOverloads constructor(
 
         val xValue = (deviceForegroundBoxSize.right - deviceForegroundBoxSize.left) / drawableWidth
         val yValue = (deviceForegroundBoxSize.bottom - deviceForegroundBoxSize.top) / drawableHeight
-        val valueMaxData =max(xValue, yValue)
+        val valueMaxData = max(xValue, yValue)
 
         //
         // Center the image
@@ -623,7 +623,7 @@ open class TouchImageView @JvmOverloads constructor(
     }
 
     override fun canScrollHorizontally(direction: Int): Boolean {
-        nextMatrix?.getValues(m)
+        nextMatrix.getValues(m)
         val x = m[Matrix.MTRANS_X]
         return if (getImageWidth() < viewWidth) false
         else if (x >= -1 && direction < 0) false
@@ -761,7 +761,6 @@ open class TouchImageView @JvmOverloads constructor(
                 targetZoom = maxScale
                 animateToZoomBoundary = true
 
-                // FIXME : Pinch Zoom 사이즈 deviceForegroundBoxSize 적용하기.
             } else if (normalizedScale < minScale) {
                 targetZoom = minScale
                 animateToZoomBoundary = true
@@ -892,7 +891,7 @@ open class TouchImageView @JvmOverloads constructor(
             val targetX = startTouch.x + t * (endTouch.x - startTouch.x)
             val targetY = startTouch.y + t * (endTouch.y - startTouch.y)
             val curr = transformCoordinateBitmapToTouch(bitmapX, bitmapY)
-            nextMatrix?.postTranslate(targetX - curr.x, targetY - curr.y)
+            nextMatrix.postTranslate(targetX - curr.x, targetY - curr.y)
         }
 
         /**
@@ -933,7 +932,7 @@ open class TouchImageView @JvmOverloads constructor(
      * @return Coordinates of the point touched, in the coordinate system of the original drawable.
      */
     private fun transformCoordTouchToBitmap(x: Float, y: Float, clipToBitmap: Boolean): PointF {
-        nextMatrix?.getValues(m)
+        nextMatrix.getValues(m)
         val origW = drawable.intrinsicWidth.toFloat()
         val origH = drawable.intrinsicHeight.toFloat()
         val transX = m[Matrix.MTRANS_X]
@@ -958,7 +957,7 @@ open class TouchImageView @JvmOverloads constructor(
      * @return Coordinates of the point in the view's coordinate system.
      */
     private fun transformCoordinateBitmapToTouch(bx: Float, by: Float): PointF {
-        nextMatrix?.getValues(m)
+        nextMatrix.getValues(m)
         val origW = drawable.intrinsicWidth.toFloat()
         val origH = drawable.intrinsicHeight.toFloat()
         val px = bx / origW
@@ -978,7 +977,7 @@ open class TouchImageView @JvmOverloads constructor(
         if (state === State.DRAG) {
             val deltaX = curr.x - last.x
             val deltaY = curr.y - last.y
-            nextMatrix?.postTranslate(deltaX, deltaY)
+            nextMatrix.postTranslate(deltaX, deltaY)
             fixTrans()
             last.set(curr.x, curr.y)
         }
@@ -986,11 +985,6 @@ open class TouchImageView @JvmOverloads constructor(
 
     override fun actionUp(curr: PointF) {
         state = (State.NONE)
-        /*val deltaX = curr.x - last.x
-        val deltaY = curr.y - last.y
-        nextMatrix?.postTranslate(deltaX, deltaY)
-        fixTrans()
-        last.set(curr.x, curr.y)*/
     }
 
     override fun actionPointerUp(curr: PointF) {

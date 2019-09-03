@@ -56,8 +56,8 @@ abstract class BaseImageView @JvmOverloads constructor(
     protected var superMaxScale: Float = 0.toFloat()
 
 
-    protected val nextMatrix: Matrix? = Matrix()
-    protected val prevMatrix: Matrix? = Matrix()
+    protected val nextMatrix: Matrix = Matrix()
+    protected val prevMatrix: Matrix = Matrix()
 
     @Volatile
     protected var m: FloatArray = FloatArray(9)
@@ -152,9 +152,9 @@ abstract class BaseImageView @JvmOverloads constructor(
      */
     protected inner class Fling internal constructor(velocityX: Int, velocityY: Int) : Runnable {
 
-        internal var scroller: CompatScroller? = null
-        internal var currX: Int = 0
-        internal var currY: Int = 0
+        private var scroller: CompatScroller? = null
+        private var currX: Int = 0
+        private var currY: Int = 0
 
         init {
             state = State.FLING
