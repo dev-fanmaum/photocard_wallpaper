@@ -228,7 +228,7 @@ class WallPaperSupportImageView @JvmOverloads constructor(
         notchInfoValue?.asSequence()
             ?.map { it.notchInfoReSizeToViewOverlayRatio() }
             ?.map { it to notchMaskPaint }
-            ?.forEach { canvas.drawRect(it.first, it.second) }
+            ?.forEach { canvas.cutOutDraw(it.first, it.second, 10f) }
 
 
     }
@@ -240,6 +240,41 @@ class WallPaperSupportImageView @JvmOverloads constructor(
             deviceForegroundBoxSize.left + right * viewRatioFromDevice,
             deviceForegroundBoxSize.top + bottom * viewRatioFromDevice
         )
+    }
+
+
+    private fun Canvas.cutOutDraw(rect: RectF, paint: Paint, roundSize: Float) {
+        val drawPath = Path()
+        val roundPositionCheckToLeft = rect.left == deviceForegroundBoxSize.left
+        val roundPositionCheckToRight = rect.right == deviceForegroundBoxSize.right
+        val roundPositionCheckToTop = rect.top == deviceForegroundBoxSize.top
+        val roundPositionCheckToBottom = rect.bottom == deviceForegroundBoxSize.bottom
+
+        if (roundPositionCheckToTop || roundPositionCheckToLeft) {
+            drawPath.moveTo(rect.left, rect.top)
+        } else {
+            drawPath.moveTo(rect.left + roundSize, rect.top)
+            drawPath.rQuadTo(0f, 0f, -roundSize, roundSize)
+        }
+        drawPath.lineTo(rect.left, rect.bottom - roundSize)
+
+        if (roundPositionCheckToBottom || roundPositionCheckToLeft)
+            drawPath.lineTo(rect.left, rect.bottom)
+        else drawPath.rQuadTo(0f, 0f, roundSize, roundSize)
+        drawPath.lineTo(rect.right - roundSize, rect.bottom)
+
+        if (roundPositionCheckToBottom || roundPositionCheckToRight)
+            drawPath.lineTo(rect.right, rect.bottom)
+        else drawPath.rQuadTo(0f, 0f, roundSize, -roundSize)
+        drawPath.lineTo(rect.right, rect.top + roundSize)
+
+        if (roundPositionCheckToTop || roundPositionCheckToRight)
+            drawPath.lineTo(rect.right, rect.top)
+        else drawPath.rQuadTo(0f, 0f, -roundSize, -roundSize)
+
+        drawPath.close()
+
+        this.drawPath(drawPath, paint)
     }
 
 }
