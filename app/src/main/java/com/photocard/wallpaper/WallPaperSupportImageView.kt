@@ -279,30 +279,5 @@ class WallPaperSupportImageView @JvmOverloads constructor(
         reflect: KMutableProperty1<RectF, Float>
     ): Boolean = reflect.get(rect) == reflect.get(foregroundBox)
 
-    override fun setImageResource(resId: Int) {
-        super.setImageResource(resId)
-        requestLayout()
-        initMeasureSettingFlag = true
-    }
-
-    override fun setImageBitmap(bm: Bitmap) {
-        super.setImageBitmap(bm)
-        requestLayout()
-        initMeasureSettingFlag = true
-    }
-
-    override fun setImageDrawable(drawable: Drawable?) {
-        super.setImageDrawable(drawable)
-        requestLayout()
-        initMeasureSettingFlag = true
-    }
-
-    override fun setImageURI(uri: Uri?) {
-        super.setImageURI(uri)
-        requestLayout()
-        initMeasureSettingFlag = true
-    }
-
-
 }
 

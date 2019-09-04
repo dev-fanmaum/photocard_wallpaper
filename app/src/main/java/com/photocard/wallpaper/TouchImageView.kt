@@ -141,6 +141,7 @@ open class TouchImageView @JvmOverloads constructor(
             return point
         }
 
+    // FIXME : 버전 호환성 추가하기.
     init {
         super.setClickable(true)
 
@@ -405,7 +406,7 @@ open class TouchImageView @JvmOverloads constructor(
         }
     }
 
-    protected var initMeasureSettingFlag = true
+    private var initMeasureSettingFlag = true
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val drawable = drawable
@@ -427,7 +428,6 @@ open class TouchImageView @JvmOverloads constructor(
         // Set view dimensions
         //
         setMeasuredDimension(viewWidth, viewHeight)
-//        setMeasuredDimension(viewWidth, (context.resources.displayMetrics.density * 300).toInt())
 
         //
         // Fit content within view
