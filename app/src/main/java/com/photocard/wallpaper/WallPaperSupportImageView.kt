@@ -1,24 +1,28 @@
 package com.photocard.wallpaper
 
+import android.app.Activity
 import android.app.WallpaperManager
-import android.app.WallpaperManager.FLAG_SYSTEM
 import android.content.Context
 import android.graphics.*
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.util.AttributeSet
+import android.util.Log
+import android.view.WindowInsets
 import androidx.annotation.IntRange
-import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
-import androidx.appcompat.content.res.AppCompatResources
-import androidx.core.content.ContextCompat
-import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
+import androidx.fragment.app.Fragment
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlin.math.abs
 import kotlin.math.min
+import kotlin.reflect.KFunction
 
 class WallPaperSupportImageView @JvmOverloads constructor(
     context: Context,
@@ -31,11 +35,19 @@ class WallPaperSupportImageView @JvmOverloads constructor(
         fun complete()
     }
 
+    private var notchInfoValue: List<Rect>? = null
 
-    private val notchInfoVaule =
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) rootWindowInsets.displayCutout?.run { boundingRects }
-        else null
-
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            notchInfoValue =
+                when (context) {
+                    is Activity -> (context as Activity).window.decorView.rootWindowInsets?.displayCutout?.boundingRects
+                    is Fragment -> (context as Fragment).requireActivity().window.decorView.rootWindowInsets?.displayCutout?.boundingRects
+                    else -> null
+                }
+        }
+    }
 
     private val overlayDrawable: Drawable?
 
@@ -94,6 +106,9 @@ class WallPaperSupportImageView @JvmOverloads constructor(
     private val deviceSizeFromOverlayToWidthSize get() = (deviceForegroundBoxSize.right - deviceForegroundBoxSize.left).toInt()
     private val deviceSizeFromOverlayToHeightSize get() = (deviceForegroundBoxSize.bottom - deviceForegroundBoxSize.top).toInt()
 
+    private val viewRatioFromDevice get() = (deviceForegroundBoxSize.bottom - deviceForegroundBoxSize.top) / deviceHeight
+
+
     @RequiresPermission(allOf = [android.Manifest.permission.SET_WALLPAPER, android.Manifest.permission.SET_WALLPAPER_HINTS])
     @Synchronized
     fun saveAndCutBitmap(callback: WallPaperCallBack) {
@@ -125,12 +140,6 @@ class WallPaperSupportImageView @JvmOverloads constructor(
         val wallPaperManager = WallpaperManager.getInstance(context)
 
         wallPaperManager.setBitmap(bitmap)
-
-        /*val bos = ByteArrayOutputStream()
-        bitmap.compress(Bitmap.CompressFormat.PNG, 0, bos)
-        val bitmapData = bos.toByteArray()
-        val bs = ByteArrayInputStream(bitmapData)
-        wallPaperManager.setStream(bs)*/
 
         wallPaperManager.suggestDesiredDimensions(
             deviceWidth.toInt(),
@@ -201,13 +210,36 @@ class WallPaperSupportImageView @JvmOverloads constructor(
             )
             overlayDrawable.draw(Canvas(overlayBitmap))
 
+
             canvas.drawBitmap(
                 overlayBitmap,
                 deviceForegroundBoxSize.left,
                 deviceForegroundBoxSize.top,
                 Paint().apply { alpha = overlayDrawableAlpha }
             )
+
         }
+
+        val notchMaskPaint = Paint().apply {
+            style = Paint.Style.FILL
+            color = Color.BLACK
+        }
+
+        notchInfoValue?.asSequence()
+            ?.map { it.notchInfoReSizeToViewOverlayRatio() }
+            ?.map { it to notchMaskPaint }
+            ?.forEach { canvas.drawRect(it.first, it.second) }
+
+
+    }
+
+    private fun Rect.notchInfoReSizeToViewOverlayRatio() = run {
+        RectF(
+            deviceForegroundBoxSize.left + left * viewRatioFromDevice,
+            deviceForegroundBoxSize.top + top * viewRatioFromDevice,
+            deviceForegroundBoxSize.left + right * viewRatioFromDevice,
+            deviceForegroundBoxSize.top + bottom * viewRatioFromDevice
+        )
     }
 
 }

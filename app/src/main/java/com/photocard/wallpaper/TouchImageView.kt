@@ -145,12 +145,9 @@ open class TouchImageView @JvmOverloads constructor(
         super.setClickable(true)
 
         val size = Point()
-        (context.getSystemService(Context.WINDOW_SERVICE) as WindowManager).apply {
-            layoutParams = WindowManager.LayoutParams()
-                .apply { type = WindowManager.LayoutParams.TYPE_WALLPAPER }
-        }.defaultDisplay.getSize(
-            size
-        )
+        (context.getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay
+            .getRealSize(size)
+
         deviceWidth = size.x.toFloat()
         deviceHeight = size.y.toFloat()
 
@@ -1005,7 +1002,7 @@ open class TouchImageView @JvmOverloads constructor(
         private const val SUPER_MIN_MULTIPLIER = .75f
         private const val SUPER_MAX_MULTIPLIER = 1.25f
 
-        private const val OVERLAY_SCALE_SIZE = .1f
+        const val OVERLAY_SCALE_SIZE = .1f
 
         private const val INSTANCE_STATE = "instanceState"
         private const val SAVE_SCALE = "saveScale"
