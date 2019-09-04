@@ -7,8 +7,6 @@ import android.graphics.*
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.util.AttributeSet
-import android.util.Log
-import android.view.WindowInsets
 import androidx.annotation.IntRange
 import androidx.annotation.RequiresPermission
 import androidx.fragment.app.Fragment
@@ -22,7 +20,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.math.abs
 import kotlin.math.min
-import kotlin.reflect.KFunction
+import kotlin.reflect.KMutableProperty1
 
 class WallPaperSupportImageView @JvmOverloads constructor(
     context: Context,
@@ -245,10 +243,10 @@ class WallPaperSupportImageView @JvmOverloads constructor(
 
     private fun Canvas.cutOutDraw(rect: RectF, paint: Paint, roundSize: Float) {
         val drawPath = Path()
-        val roundPositionCheckToLeft = rect.left == deviceForegroundBoxSize.left
-        val roundPositionCheckToRight = rect.right == deviceForegroundBoxSize.right
-        val roundPositionCheckToTop = rect.top == deviceForegroundBoxSize.top
-        val roundPositionCheckToBottom = rect.bottom == deviceForegroundBoxSize.bottom
+        val roundPositionCheckToLeft = rectCheckPosition(rect, deviceForegroundBoxSize, RectF::left)
+        val roundPositionCheckToRight = rectCheckPosition(rect, deviceForegroundBoxSize, RectF::right)
+        val roundPositionCheckToTop = rectCheckPosition(rect, deviceForegroundBoxSize, RectF::top)
+        val roundPositionCheckToBottom = rectCheckPosition(rect, deviceForegroundBoxSize, RectF::bottom)
 
         if (roundPositionCheckToTop || roundPositionCheckToLeft) {
             drawPath.moveTo(rect.left, rect.top)
@@ -276,6 +274,13 @@ class WallPaperSupportImageView @JvmOverloads constructor(
 
         this.drawPath(drawPath, paint)
     }
+
+
+    private fun rectCheckPosition(
+        rect: RectF,
+        foregroundBox: RectF,
+        reflect: KMutableProperty1<RectF, Float>
+    ): Boolean = reflect.get(rect) == reflect.get(foregroundBox)
 
 }
 
