@@ -5,6 +5,7 @@ import android.app.WallpaperManager
 import android.content.Context
 import android.graphics.*
 import android.graphics.drawable.Drawable
+import android.net.Uri
 import android.os.Build
 import android.util.AttributeSet
 import androidx.annotation.IntRange
@@ -180,7 +181,7 @@ class WallPaperSupportImageView @JvmOverloads constructor(
 
     override fun onDrawForeground(canvas: Canvas) {
         super.onDrawForeground(canvas)
-
+        if (initMeasureSettingFlag) return
         if (overlayDrawable == null) {
             val paint = Paint().apply {
                 strokeWidth = 4f
@@ -238,9 +239,11 @@ class WallPaperSupportImageView @JvmOverloads constructor(
     private fun Canvas.cutOutDraw(rect: RectF, paint: Paint, roundSize: Float) {
         val drawPath = Path()
         val roundPositionCheckToLeft = rectCheckPosition(rect, deviceForegroundBoxSize, RectF::left)
-        val roundPositionCheckToRight = rectCheckPosition(rect, deviceForegroundBoxSize, RectF::right)
+        val roundPositionCheckToRight =
+            rectCheckPosition(rect, deviceForegroundBoxSize, RectF::right)
         val roundPositionCheckToTop = rectCheckPosition(rect, deviceForegroundBoxSize, RectF::top)
-        val roundPositionCheckToBottom = rectCheckPosition(rect, deviceForegroundBoxSize, RectF::bottom)
+        val roundPositionCheckToBottom =
+            rectCheckPosition(rect, deviceForegroundBoxSize, RectF::bottom)
 
         if (roundPositionCheckToTop || roundPositionCheckToLeft) {
             drawPath.moveTo(rect.left, rect.top)
@@ -275,6 +278,31 @@ class WallPaperSupportImageView @JvmOverloads constructor(
         foregroundBox: RectF,
         reflect: KMutableProperty1<RectF, Float>
     ): Boolean = reflect.get(rect) == reflect.get(foregroundBox)
+
+    override fun setImageResource(resId: Int) {
+        super.setImageResource(resId)
+        requestLayout()
+        initMeasureSettingFlag = true
+    }
+
+    override fun setImageBitmap(bm: Bitmap) {
+        super.setImageBitmap(bm)
+        requestLayout()
+        initMeasureSettingFlag = true
+    }
+
+    override fun setImageDrawable(drawable: Drawable?) {
+        super.setImageDrawable(drawable)
+        requestLayout()
+        initMeasureSettingFlag = true
+    }
+
+    override fun setImageURI(uri: Uri?) {
+        super.setImageURI(uri)
+        requestLayout()
+        initMeasureSettingFlag = true
+    }
+
 
 }
 

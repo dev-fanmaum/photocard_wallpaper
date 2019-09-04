@@ -75,6 +75,15 @@ abstract class BaseImageView @JvmOverloads constructor(
 
     protected var state: State? = null
 
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        /**
+         * 가상의 뷰를 넣어 계산 할수 있도록 처리함
+         */
+        setImageBitmap(Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888))
+    }
+
     @SuppressLint("ObsoleteSdkInt")
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     protected fun compatPostOnAnimation(runnable: Runnable) {
@@ -120,7 +129,8 @@ abstract class BaseImageView @JvmOverloads constructor(
                 }
             }
             withContext(Dispatchers.Main) {
-                drawableImage?.run { setImageDrawable(this) } ?: run {
+                drawableImage?.run {
+                    setImageDrawable(this) } ?: run {
                     if (glide.errorPlaceholder != null) {
                         setImageDrawable(glide.errorPlaceholder)
                     } else {

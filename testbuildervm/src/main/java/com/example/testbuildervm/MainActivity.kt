@@ -22,7 +22,7 @@ class MainActivity : AppCompatActivity(), WallPaperSupportImageView.WallPaperCal
         setContentView(R.layout.activity_main)
 
 
-        img.setImageGlide(Glide.with(this).load(imageUri))
+        img.setImageGlide(Glide.with(this).load(imageUri).fitCenter())
 
 
         save_button.setOnClickListener {

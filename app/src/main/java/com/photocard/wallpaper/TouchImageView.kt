@@ -405,7 +405,7 @@ open class TouchImageView @JvmOverloads constructor(
         }
     }
 
-    private var initMeasureSettingFlag = true
+    protected var initMeasureSettingFlag = true
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val drawable = drawable
@@ -426,8 +426,8 @@ open class TouchImageView @JvmOverloads constructor(
         //
         // Set view dimensions
         //
-//        setMeasuredDimension(viewWidth, viewHeight)
-        setMeasuredDimension(viewWidth, (context.resources.displayMetrics.density * 300).toInt())
+        setMeasuredDimension(viewWidth, viewHeight)
+//        setMeasuredDimension(viewWidth, (context.resources.displayMetrics.density * 300).toInt())
 
         //
         // Fit content within view
@@ -436,6 +436,9 @@ open class TouchImageView @JvmOverloads constructor(
 
         if (initMeasureSettingFlag) {
 
+            if ( drawableWidth <=0 || drawableHeight <= 0 ){
+                return
+            }
             val viewToDeviceScaleSize =
                 min(
                     viewWidth / deviceWidth,
@@ -572,7 +575,7 @@ open class TouchImageView @JvmOverloads constructor(
 
             MeasureSpec.AT_MOST -> min(drawableWidth, size)
 
-            MeasureSpec.UNSPECIFIED -> drawableWidth
+            MeasureSpec.UNSPECIFIED -> size//drawableWidth
 
             else -> size
         }

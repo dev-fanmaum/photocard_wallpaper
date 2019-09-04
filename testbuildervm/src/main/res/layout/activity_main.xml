@@ -8,8 +8,6 @@
 
     <com.photocard.wallpaper.WallPaperSupportImageView
             android:id="@+id/img"
-            android:src="@drawable/ic_launcher_background"
-            android:scaleType="fitCenter"
             android:layout_width="400dp"
             android:layout_height="300dp"
             app:layout_constraintBottom_toBottomOf="parent"
