@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
-    ...
     <base-config cleartextTrafficPermitted="true">
         <trust-anchors>
             <certificates src="system"/>
@@ -10,5 +9,4 @@
         <domain includeSubdomains="true">example.com</domain>
         <domain includeSubdomains="true">cdn.example2.com</domain>
     </domain-config>
-    ...
 </network-security-config>

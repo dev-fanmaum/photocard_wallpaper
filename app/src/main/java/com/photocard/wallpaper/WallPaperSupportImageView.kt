@@ -136,13 +136,7 @@ class WallPaperSupportImageView @JvmOverloads constructor(
 
     private suspend fun setWallPaper(bitmap: Bitmap, callback: WallPaperCallBack) {
         val wallPaperManager = WallpaperManager.getInstance(context)
-
         wallPaperManager.setBitmap(bitmap)
-
-        wallPaperManager.suggestDesiredDimensions(
-            deviceWidth.toInt(),
-            deviceHeight.toInt()
-        )
 
         checkWallPaperProcess = false
         withContext(Dispatchers.Main) { callback.complete() }
