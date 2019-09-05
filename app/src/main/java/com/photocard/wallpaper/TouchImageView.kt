@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Configuration
 import android.graphics.*
+import android.os.Build
 import android.os.Bundle
 import android.os.Parcelable
 import android.util.AttributeSet
@@ -141,7 +142,6 @@ open class TouchImageView @JvmOverloads constructor(
             return point
         }
 
-    // FIXME : 버전 호환성 추가하기.
     init {
         super.setClickable(true)
 
@@ -436,7 +436,7 @@ open class TouchImageView @JvmOverloads constructor(
 
         if (initMeasureSettingFlag) {
 
-            if ( drawableWidth <=0 || drawableHeight <= 0 ){
+            if (drawableWidth <= 0 || drawableHeight <= 0) {
                 return
             }
             val viewToDeviceScaleSize =

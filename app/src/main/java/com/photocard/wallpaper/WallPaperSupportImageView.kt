@@ -181,7 +181,6 @@ class WallPaperSupportImageView @JvmOverloads constructor(
 
     override fun onDrawForeground(canvas: Canvas) {
         super.onDrawForeground(canvas)
-        if (initMeasureSettingFlag) return
         if (overlayDrawable == null) {
             val paint = Paint().apply {
                 strokeWidth = 4f
