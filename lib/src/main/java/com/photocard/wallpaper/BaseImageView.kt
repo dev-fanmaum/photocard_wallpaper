@@ -112,6 +112,14 @@ abstract class BaseImageView @JvmOverloads constructor(
     protected abstract fun savePreviousImageValues()
     protected abstract fun fitImageToView()
 
+    protected abstract fun fixScaleTrans()
+
+    protected abstract fun scaleImage(
+        deltaScale: Double,
+        focusX: Float,
+        focusY: Float,
+        stretchImageToSuper: Boolean
+    )
 
     /**
      * Fling launches sequential runnables which apply
@@ -138,8 +146,8 @@ abstract class BaseImageView @JvmOverloads constructor(
             val minY: Int
             val maxY: Int
 
-            if (getImageWidth() > viewWidth) {
-                minX = viewWidth - getImageWidth().toInt()
+            if (imageWidth > viewWidth) {
+                minX = viewWidth - imageWidth.toInt()
                 maxX = 0
 
             } else {
@@ -147,8 +155,8 @@ abstract class BaseImageView @JvmOverloads constructor(
                 minX = maxX
             }
 
-            if (getImageHeight() > viewHeight) {
-                minY = viewHeight - getImageHeight().toInt()
+            if (imageHeight > viewHeight) {
+                minY = viewHeight - imageHeight.toInt()
                 maxY = 0
 
             } else {
@@ -326,8 +334,8 @@ abstract class BaseImageView @JvmOverloads constructor(
         val origH = drawable.intrinsicHeight.toFloat()
         val transX = m[Matrix.MTRANS_X]
         val transY = m[Matrix.MTRANS_Y]
-        var finalX = (x - transX) * origW / getImageWidth()
-        var finalY = (y - transY) * origH / getImageHeight()
+        var finalX = (x - transX) * origW / imageWidth
+        var finalY = (y - transY) * origH / imageHeight
 
         if (clipToBitmap) {
             finalX = min(max(finalX, 0f), origW)
@@ -351,26 +359,12 @@ abstract class BaseImageView @JvmOverloads constructor(
         val origH = drawable.intrinsicHeight.toFloat()
         val px = bx / origW
         val py = by / origH
-        val finalX = m[Matrix.MTRANS_X] + getImageWidth() * px
-        val finalY = m[Matrix.MTRANS_Y] + getImageHeight() * py
+        val finalX = m[Matrix.MTRANS_X] + imageWidth * px
+        val finalY = m[Matrix.MTRANS_Y] + imageHeight * py
         return PointF(finalX, finalY)
     }
 
-    protected fun getImageWidth(): Float {
-        return matchViewWidth * normalizedScale
-    }
-
-    protected fun getImageHeight(): Float {
-        return matchViewHeight * normalizedScale
-    }
-
-    protected abstract fun fixScaleTrans()
-
-    protected abstract fun scaleImage(
-        deltaScale: Double,
-        focusX: Float,
-        focusY: Float,
-        stretchImageToSuper: Boolean
-    )
+    protected val imageWidth: Float get() = matchViewWidth * normalizedScale
+    protected val imageHeight: Float get() = matchViewHeight * normalizedScale
 
 }

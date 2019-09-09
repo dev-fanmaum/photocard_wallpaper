@@ -148,8 +148,8 @@ class WallPaperSupportImageView @JvmOverloads constructor(
 
     private suspend fun resizeBitmap(bitmap: Bitmap): Bitmap = Bitmap.createScaledBitmap(
         bitmap,
-        getImageWidth().toInt(),
-        getImageHeight().toInt(),
+        imageWidth.toInt(),
+        imageHeight.toInt(),
         true
     )
 
@@ -161,8 +161,8 @@ class WallPaperSupportImageView @JvmOverloads constructor(
             bitmap,
             xSize,
             ySize,
-            min((getImageWidth() - xSize).toInt(), deviceSizeFromOverlayToWidthSize.toInt()),
-            min((getImageHeight() - ySize).toInt(), deviceSizeFromOverlayToHeightSize.toInt())
+            min((imageWidth - xSize).toInt(), deviceSizeFromOverlayToWidthSize.toInt()),
+            min((imageHeight - ySize).toInt(), deviceSizeFromOverlayToHeightSize.toInt())
         )
     }
 
