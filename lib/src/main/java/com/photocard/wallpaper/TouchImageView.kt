@@ -806,7 +806,7 @@ open class TouchImageView @JvmOverloads constructor(
             resultDeltaScale = (lowerScale / origScale).toDouble()
         }
 
-        nextMatrix!!.postScale(
+        nextMatrix.postScale(
             resultDeltaScale.toFloat(),
             resultDeltaScale.toFloat(),
             focusX,

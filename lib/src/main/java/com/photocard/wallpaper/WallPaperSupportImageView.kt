@@ -7,11 +7,11 @@ import android.graphics.*
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Build
+import android.support.annotation.IntRange
+import android.support.annotation.RequiresPermission
+import android.support.v4.app.Fragment
+import android.support.v4.graphics.ColorUtils
 import android.util.AttributeSet
-import androidx.annotation.IntRange
-import androidx.annotation.RequiresPermission
-import androidx.core.graphics.ColorUtils
-import androidx.fragment.app.Fragment
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.catch

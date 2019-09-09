@@ -1,7 +1,7 @@
 package com.example.testbuildervm
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.support.v7.app.AppCompatActivity
 import android.widget.Toast
 import com.bumptech.glide.Glide
 import com.photocard.wallpaper.WallPaperSupportImageView
