@@ -10,6 +10,7 @@ import android.os.Build
 import android.util.AttributeSet
 import androidx.annotation.IntRange
 import androidx.annotation.RequiresPermission
+import androidx.core.graphics.ColorUtils
 import androidx.fragment.app.Fragment
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -181,6 +182,10 @@ class WallPaperSupportImageView @JvmOverloads constructor(
 
     override fun onDrawForeground(canvas: Canvas) {
         super.onDrawForeground(canvas)
+        if ( viewWidth <= 0 || viewHeight <= 0) return
+
+        canvas.overlayOuterBackground()
+
         if (overlayDrawable == null) {
             val paint = Paint().apply {
                 strokeWidth = 4f
@@ -234,6 +239,24 @@ class WallPaperSupportImageView @JvmOverloads constructor(
         )
     }
 
+    private fun Canvas.overlayOuterBackground() {
+
+        val tempBitmap = Bitmap.createBitmap(viewWidth, viewHeight, Bitmap.Config.ARGB_8888)
+
+        val tempCanvas = Canvas(tempBitmap)
+
+
+        val paint = Paint().apply {
+            color = ColorUtils.setAlphaComponent(Color.LTGRAY, 200)
+        }
+        tempCanvas.drawRect(0f, 0f, viewWidth.toFloat(), viewHeight.toFloat(), paint)
+        tempCanvas.drawRect(deviceForegroundBoxSize, Paint().apply {
+            xfermode = PorterDuffXfermode(PorterDuff.Mode.CLEAR)
+        })
+
+        drawBitmap(tempBitmap,0f, 0f, Paint())
+
+    }
 
     private fun Canvas.cutOutDraw(rect: RectF, paint: Paint, roundSize: Float) {
         val drawPath = Path()

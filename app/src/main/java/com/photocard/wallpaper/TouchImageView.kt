@@ -36,7 +36,7 @@ open class TouchImageView @JvmOverloads constructor(
     protected val deviceWidth: Float
     protected val deviceHeight: Float
 
-    protected lateinit var deviceForegroundBoxSize: RectF
+    protected var deviceForegroundBoxSize: RectF = RectF(0f, 0f, 0f, 0f)
 
     private var mScaleType: ScaleType? = null
 
@@ -436,7 +436,7 @@ open class TouchImageView @JvmOverloads constructor(
 
         if (initMeasureSettingFlag) {
 
-            if (drawableWidth <= 0 || drawableHeight <= 0) {
+            if (viewWidth <= 0 || viewHeight <= 0) {
                 return
             }
             val viewToDeviceScaleSize =
@@ -459,6 +459,7 @@ open class TouchImageView @JvmOverloads constructor(
                 )
 
             initMeasureSettingFlag = false
+            fitImageToView()
         }
 
     }
@@ -469,12 +470,12 @@ open class TouchImageView @JvmOverloads constructor(
      * allows the image to maintain its zoom after rotation.
      */
     override fun fitImageToView() {
-        if (initMeasureSettingFlag) return
+        val notInitDeviceBoxBoo =
+            deviceForegroundBoxSize.run { left <= 0 || right <= 0 || top <= 0 || bottom <= 0 }
+        if (notInitDeviceBoxBoo) return
+
         val drawable = drawable
         if (drawable == null || drawable.intrinsicWidth == 0 || drawable.intrinsicHeight == 0) {
-            return
-        }
-        if (nextMatrix == null || prevMatrix == null) {
             return
         }
 
@@ -498,8 +499,6 @@ open class TouchImageView @JvmOverloads constructor(
             //
             nextMatrix.setScale(valueMaxData, valueMaxData)
             nextMatrix.postTranslate(redundantXSpace / 2, redundantYSpace / 2)
-//            normalizedScale = 1f
-
         } else {
             //
             // These values should never be 0 or we will set viewWidth and viewHeight
@@ -573,9 +572,9 @@ open class TouchImageView @JvmOverloads constructor(
         when (mode) {
             MeasureSpec.EXACTLY -> size
 
-            MeasureSpec.AT_MOST -> min(drawableWidth, size)
+            MeasureSpec.AT_MOST -> max(drawableWidth, size)
 
-            MeasureSpec.UNSPECIFIED -> size//drawableWidth
+            MeasureSpec.UNSPECIFIED -> drawableWidth
 
             else -> size
         }
@@ -656,7 +655,7 @@ open class TouchImageView @JvmOverloads constructor(
             // are not run simultaneously.
             //
             fling?.cancelFling()
-            fling = Fling(velocityX.toInt(), velocityY.toInt())
+//            fling = Fling(velocityX.toInt(), velocityY.toInt()) Fixme : ???
             compatPostOnAnimation(fling!!)
             return super.onFling(e1, e2, velocityX, velocityY)
         }
