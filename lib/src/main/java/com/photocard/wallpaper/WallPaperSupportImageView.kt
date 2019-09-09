@@ -12,14 +12,11 @@ import android.support.annotation.RequiresPermission
 import android.support.v4.app.Fragment
 import android.support.v4.graphics.ColorUtils
 import android.util.AttributeSet
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import kotlin.math.abs
 import kotlin.math.min
 import kotlin.reflect.KMutableProperty1
@@ -43,7 +40,6 @@ class WallPaperSupportImageView @JvmOverloads constructor(
             notchInfoValue =
                 when (context) {
                     is Activity -> (context as Activity).window.decorView.rootWindowInsets?.displayCutout?.boundingRects
-                    is Fragment -> (context as Fragment).requireActivity().window.decorView.rootWindowInsets?.displayCutout?.boundingRects
                     else -> null
                 }
         }
@@ -103,12 +99,11 @@ class WallPaperSupportImageView @JvmOverloads constructor(
     private val viewLeftTrans get() = m[Matrix.MTRANS_X].toInt()
     private val viewTopTrans get() = m[Matrix.MTRANS_Y].toInt()
 
-    private val deviceSizeFromOverlayToWidthSize get() = (deviceForegroundBoxSize.right - deviceForegroundBoxSize.left).toInt()
-    private val deviceSizeFromOverlayToHeightSize get() = (deviceForegroundBoxSize.bottom - deviceForegroundBoxSize.top).toInt()
 
     private val viewRatioFromDevice get() = (deviceForegroundBoxSize.bottom - deviceForegroundBoxSize.top) / deviceHeight
 
 
+    @ExperimentalCoroutinesApi
     @RequiresPermission(allOf = [android.Manifest.permission.SET_WALLPAPER, android.Manifest.permission.SET_WALLPAPER_HINTS])
     @Synchronized
     fun saveAndCutBitmap(callback: WallPaperCallBack) {
@@ -166,8 +161,8 @@ class WallPaperSupportImageView @JvmOverloads constructor(
             bitmap,
             xSize,
             ySize,
-            min((getImageWidth() - xSize).toInt(), deviceSizeFromOverlayToWidthSize),
-            min((getImageHeight() - ySize).toInt(), deviceSizeFromOverlayToHeightSize)
+            min((getImageWidth() - xSize).toInt(), deviceSizeFromOverlayToWidthSize.toInt()),
+            min((getImageHeight() - ySize).toInt(), deviceSizeFromOverlayToHeightSize.toInt())
         )
     }
 
@@ -182,7 +177,7 @@ class WallPaperSupportImageView @JvmOverloads constructor(
 
     override fun onDrawForeground(canvas: Canvas) {
         super.onDrawForeground(canvas)
-        if ( viewWidth <= 0 || viewHeight <= 0) return
+        if (viewWidth <= 0 || viewHeight <= 0) return
 
         canvas.overlayOuterBackground()
 
@@ -197,12 +192,12 @@ class WallPaperSupportImageView @JvmOverloads constructor(
             overlayDrawable.setBounds(
                 0,
                 0,
-                deviceSizeFromOverlayToWidthSize,
-                deviceSizeFromOverlayToHeightSize
+                deviceSizeFromOverlayToWidthSize.toInt(),
+                deviceSizeFromOverlayToHeightSize.toInt()
             )
             val overlayBitmap = Bitmap.createBitmap(
-                deviceSizeFromOverlayToWidthSize,
-                deviceSizeFromOverlayToHeightSize,
+                deviceSizeFromOverlayToWidthSize.toInt(),
+                deviceSizeFromOverlayToHeightSize.toInt(),
                 Bitmap.Config.ARGB_8888
             )
             overlayDrawable.draw(Canvas(overlayBitmap))
@@ -254,7 +249,7 @@ class WallPaperSupportImageView @JvmOverloads constructor(
             xfermode = PorterDuffXfermode(PorterDuff.Mode.CLEAR)
         })
 
-        drawBitmap(tempBitmap,0f, 0f, Paint())
+        drawBitmap(tempBitmap, 0f, 0f, Paint())
 
     }
 

@@ -22,8 +22,9 @@ class MainActivity : AppCompatActivity(), WallPaperSupportImageView.WallPaperCal
         setContentView(R.layout.activity_main)
 
 
-        img.setImageGlide(Glide.with(this).load(imageUri).fitCenter())
-
+        Glide.with(this)
+            .load(imageUri)
+            .into(img)
 
         save_button.setOnClickListener {
             img.saveAndCutBitmap(this)

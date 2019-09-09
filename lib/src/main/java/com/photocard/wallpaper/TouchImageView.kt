@@ -38,6 +38,9 @@ open class TouchImageView @JvmOverloads constructor(
 
     protected var deviceForegroundBoxSize: RectF = RectF(0f, 0f, 0f, 0f)
 
+    protected val deviceSizeFromOverlayToWidthSize get() = deviceForegroundBoxSize.right - deviceForegroundBoxSize.left
+    protected val deviceSizeFromOverlayToHeightSize get() = deviceForegroundBoxSize.bottom - deviceForegroundBoxSize.top
+
     private var mScaleType: ScaleType? = null
 
     private var imageRenderedAtLeastOnce: Boolean = false
@@ -377,7 +380,7 @@ open class TouchImageView @JvmOverloads constructor(
      * then makes sure the image is centered correctly within the view.
      */
     // FIXME : 최소 사이즈 Scale 동작시 정렬되는 기준
-    private fun fixScaleTrans() {
+    override fun fixScaleTrans() {
         fixTrans()
         nextMatrix.getValues(m)
         if (getImageWidth() < viewWidth) {
@@ -424,15 +427,8 @@ open class TouchImageView @JvmOverloads constructor(
         viewWidth = setViewSize(widthMode, widthSize, drawableWidth)
         viewHeight = setViewSize(heightMode, heightSize, drawableHeight)
 
-        //
         // Set view dimensions
-        //
         setMeasuredDimension(viewWidth, viewHeight)
-
-        //
-        // Fit content within view
-        //
-        fitImageToView()
 
         if (initMeasureSettingFlag) {
 
@@ -482,50 +478,40 @@ open class TouchImageView @JvmOverloads constructor(
         val drawableWidth = drawable.intrinsicWidth
         val drawableHeight = drawable.intrinsicHeight
 
-        val xValue = (deviceForegroundBoxSize.right - deviceForegroundBoxSize.left) / drawableWidth
-        val yValue = (deviceForegroundBoxSize.bottom - deviceForegroundBoxSize.top) / drawableHeight
+        val xValue = deviceSizeFromOverlayToWidthSize / drawableWidth
+        val yValue = deviceSizeFromOverlayToHeightSize / drawableHeight
         val valueMaxData = max(xValue, yValue)
 
-        //
         // Center the image
-        //
         val redundantXSpace = viewWidth - valueMaxData * drawableWidth
         val redundantYSpace = viewHeight - valueMaxData * drawableHeight
         matchViewWidth = viewWidth - redundantXSpace
         matchViewHeight = viewHeight - redundantYSpace
         if (!isZoomed && !imageRenderedAtLeastOnce) {
-            //
+
             // Stretch and center image to fit view
-            //
             nextMatrix.setScale(valueMaxData, valueMaxData)
             nextMatrix.postTranslate(redundantXSpace / 2, redundantYSpace / 2)
         } else {
-            //
+
             // These values should never be 0 or we will set viewWidth and viewHeight
             // to NaN in translateMatrixAfterRotate. To avoid this, call savePreviousImageValues
             // to set them equal to the current values.
-            //
             if (prevMatchViewWidth == 0f || prevMatchViewHeight == 0f) {
                 savePreviousImageValues()
             }
 
             prevMatrix.getValues(m)
 
-            //
             // Rescale Matrix after rotation
-            //
             m[Matrix.MSCALE_X] = matchViewWidth / drawableWidth * normalizedScale
             m[Matrix.MSCALE_Y] = matchViewHeight / drawableHeight * normalizedScale
 
-            //
             // TransX and TransY from previous nextMatrix
-            //
             val transX = m[Matrix.MTRANS_X]
             val transY = m[Matrix.MTRANS_Y]
 
-            //
             // Width
-            //
             val prevActualWidth = prevMatchViewWidth * normalizedScale
             val actualWidth = getImageWidth()
             translateMatrixAfterRotate(
@@ -538,9 +524,7 @@ open class TouchImageView @JvmOverloads constructor(
                 drawableWidth
             )
 
-            //
             // Height
-            //
             val prevActualHeight = prevMatchViewHeight * normalizedScale
             val actualHeight = getImageHeight()
             translateMatrixAfterRotate(
@@ -553,9 +537,7 @@ open class TouchImageView @JvmOverloads constructor(
                 drawableHeight
             )
 
-            //
             // Set the nextMatrix to the adjusted scale and translate values.
-            //
             nextMatrix.setValues(m)
         }
         fixTrans()
@@ -650,12 +632,10 @@ open class TouchImageView @JvmOverloads constructor(
             velocityX: Float,
             velocityY: Float
         ): Boolean {
-            //
             // If a previous fling is still active, it should be cancelled so that two flings
             // are not run simultaneously.
-            //
             fling?.cancelFling()
-//            fling = Fling(velocityX.toInt(), velocityY.toInt()) Fixme : ???
+            fling = Fling(velocityX.toInt(), velocityY.toInt())
             compatPostOnAnimation(fling!!)
             return super.onFling(e1, e2, velocityX, velocityY)
         }
@@ -693,8 +673,8 @@ open class TouchImageView @JvmOverloads constructor(
 
         @SuppressLint("ClickableViewAccessibility")
         override fun onTouch(v: View, event: MotionEvent): Boolean {
-            mScaleDetector!!.onTouchEvent(event)
-//            mGestureDetector!!.onTouchEvent(event)
+            mScaleDetector?.onTouchEvent(event)
+            mGestureDetector?.onTouchEvent(event)
             val curr = PointF(event.x, event.y)
 
             if (state === State.NONE || state === State.DRAG || state === State.FLING) {
@@ -777,7 +757,7 @@ open class TouchImageView @JvmOverloads constructor(
         }
     }
 
-    private fun scaleImage(
+    override fun scaleImage(
         deltaScale: Double,
         focusX: Float,
         focusY: Float,
@@ -815,161 +795,6 @@ open class TouchImageView @JvmOverloads constructor(
         fixScaleTrans()
     }
 
-    /**
-     * DoubleTapZoom calls a series of runnables which apply
-     * an animated zoom in/out graphic to the image.
-     *
-     * @author Ortiz
-     */
-    private inner class DoubleTapZoom internal constructor(
-        private val targetZoom: Float,
-        focusX: Float,
-        focusY: Float,
-        private val stretchImageToSuper: Boolean
-    ) : Runnable {
-
-        private val startTime: Long
-        private val startZoom: Float
-        private val bitmapX: Float
-        private val bitmapY: Float
-        private val interpolator = AccelerateDecelerateInterpolator()
-        private val startTouch: PointF
-        private val endTouch: PointF
-
-        init {
-            state = (State.ANIMATE_ZOOM)
-            startTime = System.currentTimeMillis()
-            this.startZoom = normalizedScale
-            val bitmapPoint = transformCoordinateTouchToBitmap(focusX, focusY, false)
-            this.bitmapX = bitmapPoint.x
-            this.bitmapY = bitmapPoint.y
-
-            //
-            // Used for translating image during scaling
-            //
-            startTouch = transformCoordinateBitmapToTouch(bitmapX, bitmapY)
-            endTouch = PointF((viewWidth / 2).toFloat(), (viewHeight / 2).toFloat())
-        }
-
-        override fun run() {
-            val t = interpolate()
-            val deltaScale = calculateDeltaScale(t)
-            scaleImage(deltaScale, bitmapX, bitmapY, stretchImageToSuper)
-            translateImageToCenterTouchPosition(t)
-            fixScaleTrans()
-            imageMatrix = nextMatrix
-
-            //
-            // OnTouchImageViewListener is set: double tap runnable updates listener
-            // with every frame.
-            //
-            touchImageViewListener?.onMove()
-
-            if (t < 1f) {
-                //
-                // We haven't finished zooming
-                //
-                compatPostOnAnimation(this)
-
-            } else {
-                //
-                // Finished zooming
-                //
-                state = (State.NONE)
-            }
-        }
-
-        /**
-         * Interpolate between where the image should start and end in order to translate
-         * the image so that the point that is touched is what ends up centered at the end
-         * of the zoom.
-         *
-         * @param t
-         */
-        private fun translateImageToCenterTouchPosition(t: Float) {
-            val targetX = startTouch.x + t * (endTouch.x - startTouch.x)
-            val targetY = startTouch.y + t * (endTouch.y - startTouch.y)
-            val curr = transformCoordinateBitmapToTouch(bitmapX, bitmapY)
-            nextMatrix.postTranslate(targetX - curr.x, targetY - curr.y)
-        }
-
-        /**
-         * Use interpolator to get t
-         *
-         * @return
-         */
-        private fun interpolate(): Float {
-            val currTime = System.currentTimeMillis()
-            var elapsed = (currTime - startTime) / zoomTime
-            elapsed = min(1f, elapsed)
-            return interpolator.getInterpolation(elapsed)
-        }
-
-        /**
-         * Interpolate the current targeted zoom and get the delta
-         * from the current zoom.
-         *
-         * @param t
-         * @return
-         */
-        private fun calculateDeltaScale(t: Float): Double {
-            val zoom = (startZoom + t * (targetZoom - startZoom)).toDouble()
-            return zoom / normalizedScale
-        }
-
-        private val zoomTime = 500f
-    }
-
-    /**
-     * This function will transform the coordinates in the touch event to the coordinate
-     * system of the drawable that the imageview contain
-     *
-     * @param x            x-coordinate of touch event
-     * @param y            y-coordinate of touch event
-     * @param clipToBitmap Touch event may occur within view, but outside image content. True, to clip return value
-     * to the bounds of the bitmap size.
-     * @return Coordinates of the point touched, in the coordinate system of the original drawable.
-     */
-    private fun transformCoordinateTouchToBitmap(
-        x: Float,
-        y: Float,
-        clipToBitmap: Boolean
-    ): PointF {
-        nextMatrix.getValues(m)
-        val origW = drawable.intrinsicWidth.toFloat()
-        val origH = drawable.intrinsicHeight.toFloat()
-        val transX = m[Matrix.MTRANS_X]
-        val transY = m[Matrix.MTRANS_Y]
-        var finalX = (x - transX) * origW / getImageWidth()
-        var finalY = (y - transY) * origH / getImageHeight()
-
-        if (clipToBitmap) {
-            finalX = min(max(finalX, 0f), origW)
-            finalY = min(max(finalY, 0f), origH)
-        }
-
-        return PointF(finalX, finalY)
-    }
-
-    /**
-     * Inverse of transformCoordinateTouchToBitmap. This function will transform the coordinates in the
-     * drawable's coordinate system to the view's coordinate system.
-     *
-     * @param bx x-coordinate in original bitmap coordinate system
-     * @param by y-coordinate in original bitmap coordinate system
-     * @return Coordinates of the point in the view's coordinate system.
-     */
-    private fun transformCoordinateBitmapToTouch(bx: Float, by: Float): PointF {
-        nextMatrix.getValues(m)
-        val origW = drawable.intrinsicWidth.toFloat()
-        val origH = drawable.intrinsicHeight.toFloat()
-        val px = bx / origW
-        val py = by / origH
-        val finalX = m[Matrix.MTRANS_X] + getImageWidth() * px
-        val finalY = m[Matrix.MTRANS_Y] + getImageHeight() * py
-        return PointF(finalX, finalY)
-    }
-
     override fun actionDown(curr: PointF) {
         last.set(curr)
         fling?.cancelFling()
@@ -981,13 +806,14 @@ open class TouchImageView @JvmOverloads constructor(
             val deltaX = curr.x - last.x
             val deltaY = curr.y - last.y
             nextMatrix.postTranslate(deltaX, deltaY)
-            fixTrans()
+//            fixTrans()
             last.set(curr.x, curr.y)
         }
     }
 
     override fun actionUp(curr: PointF) {
         state = (State.NONE)
+        fixTrans()
     }
 
     override fun actionPointerUp(curr: PointF) {
