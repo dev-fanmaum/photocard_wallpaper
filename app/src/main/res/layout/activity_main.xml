@@ -16,7 +16,8 @@
             app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent" />-->
 
-    <com.photocard.wallpaper.OverlayViewLayout
+    <com.photocard.wallpaper.WallPaperView
+            android:id="@+id/wallPaperSettingView"
             android:layout_width="300dp"
             android:layout_height="300dp"
             app:layout_constraintBottom_toBottomOf="parent"

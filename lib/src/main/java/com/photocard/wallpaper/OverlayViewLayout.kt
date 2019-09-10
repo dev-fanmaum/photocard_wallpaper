@@ -2,6 +2,7 @@ package com.photocard.wallpaper
 
 import android.content.Context
 import android.graphics.*
+import android.support.annotation.CallSuper
 import android.util.AttributeSet
 import android.view.WindowManager
 import android.widget.FrameLayout
@@ -13,7 +14,7 @@ open class OverlayViewLayout @JvmOverloads constructor(
     defStyleAtt: Int = 0
 ) : FrameLayout(context, attributes, defStyleAtt) {
 
-    private val deviceViewBox: RectF = RectF()
+    val deviceViewBox: RectF = RectF()
     private var viewRatioScale = .9f
 
     private var borderColor = Color.BLACK
@@ -48,15 +49,19 @@ open class OverlayViewLayout @JvmOverloads constructor(
 
     }
 
-    private var initMeasureSettingFrag = true
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+        deviceSizeSetting(
+            MeasureSpec.getSize(widthMeasureSpec),
+            MeasureSpec.getSize(heightMeasureSpec)
+        )
+    }
 
+    private var initMeasureSettingFrag = true
+    @CallSuper
+    open fun deviceSizeSetting(viewWidth: Int, viewHeight: Int) {
         if (initMeasureSettingFrag) {
-            val viewWidth = MeasureSpec.getSize(widthMeasureSpec)
-            val viewHeight = MeasureSpec.getSize(heightMeasureSpec)
-
             val widthSizeDiv = viewWidth / deviceViewBox.right
             val heightSizeDiv = viewHeight / deviceViewBox.bottom
 
