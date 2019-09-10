@@ -22,13 +22,13 @@ class MainActivity : AppCompatActivity(), WallPaperSupportImageView.WallPaperCal
         setContentView(R.layout.activity_main)
 
 
-        Glide.with(this)
+        /*Glide.with(this)
             .load(imageUri)
             .into(img)
 
         save_button.setOnClickListener {
             img.saveAndCutBitmap(this)
-        }
+        }*/
 
     }
 

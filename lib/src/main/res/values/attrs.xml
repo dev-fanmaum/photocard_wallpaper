@@ -6,4 +6,15 @@
         <attr name="overlay_drawable_alpha" format="integer"/>
     </declare-styleable>
 
+
+    <declare-styleable name="OverlayViewLayout">
+        <attr name="overlay_border_color" format="color"/>
+        <attr name="overlay_border_scale_size" format="dimension"/>
+    </declare-styleable>
+
+    <declare-styleable name="WallPaperView">
+        <attr name="wallpaper_image_id" format="reference"/>
+
+    </declare-styleable>
+
 </resources>

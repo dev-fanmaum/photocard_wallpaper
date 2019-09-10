@@ -673,7 +673,7 @@ open class TouchImageView @JvmOverloads constructor(
 
         @SuppressLint("ClickableViewAccessibility")
         override fun onTouch(v: View, event: MotionEvent): Boolean {
-//            mScaleDetector?.onTouchEvent(event)
+            mScaleDetector?.onTouchEvent(event)
 //            mGestureDetector?.onTouchEvent(event)
             val curr = PointF(event.rawX, event.rawY)
 
@@ -708,6 +708,9 @@ open class TouchImageView @JvmOverloads constructor(
         }
     }
 
+    private var tempScaleX = 0f
+    private var tempScaleY = 0f
+
     /**
      * ScaleListener detects user two finger scaling and scales image.
      *
@@ -715,12 +718,29 @@ open class TouchImageView @JvmOverloads constructor(
      */
     private inner class ScaleListener : ScaleGestureDetector.SimpleOnScaleGestureListener() {
         override fun onScaleBegin(detector: ScaleGestureDetector): Boolean {
+            tempScaleX = scaleX
+            tempScaleY = scaleY
             state = (State.ZOOM)
             return true
         }
 
         override fun onScale(detector: ScaleGestureDetector): Boolean {
-            scaleImage(detector.scaleFactor.toDouble(), detector.focusX, detector.focusY, true)
+//            scaleImage(detector.scaleFactor.toDouble(), detector.focusX, detector.focusY, true)
+
+            Log.i("scaleEventCheck", """
+                |scale = $scaleX , $scaleY
+                |detector = ${detector.scaleFactor}
+                |foucs = ${detector.focusX} , ${detector.focusY}
+                |currentSpan = ${detector.currentSpanX} , ${detector.currentSpanY}
+                |previousSpan = ${detector.previousSpanX} , ${detector.previousSpanY}
+            """.trimIndent())
+
+
+
+            animate()
+                .scaleX(tempScaleX * detector.scaleFactor)
+                .scaleY(tempScaleY * detector.scaleFactor)
+                .start()
 
             //
             // OnTouchImageViewListener is set: TouchImageView pinch zoomed by user.
@@ -733,6 +753,10 @@ open class TouchImageView @JvmOverloads constructor(
 
         override fun onScaleEnd(detector: ScaleGestureDetector) {
             super.onScaleEnd(detector)
+            tempScaleX = scaleX
+
+            tempScaleY = scaleY
+
             state = (State.NONE)
             var animateToZoomBoundary = false
             var targetZoom = normalizedScale
