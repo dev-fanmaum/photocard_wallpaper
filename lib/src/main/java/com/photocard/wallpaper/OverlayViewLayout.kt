@@ -15,6 +15,13 @@ open class OverlayViewLayout @JvmOverloads constructor(
 ) : FrameLayout(context, attributes, defStyleAtt) {
 
     val deviceViewBox: RectF = RectF()
+
+    protected val userDeviceWidth: Float
+    protected val userDeviceHeight: Float
+
+    val deviceViewWidth get() = deviceViewBox.right - deviceViewBox.left
+    val deviceViewHeight get() = deviceViewBox.bottom - deviceViewBox.top
+
     private var viewRatioScale = .9f
 
     private var borderColor = Color.BLACK
@@ -27,12 +34,12 @@ open class OverlayViewLayout @JvmOverloads constructor(
         (context.getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay
             .getRealSize(size)
 
-        val deviceWidth = size.x.toFloat()
-        val deviceHeight = size.y.toFloat()
+        userDeviceWidth = size.x.toFloat()
+        userDeviceHeight = size.y.toFloat()
 
         deviceViewBox.apply {
-            bottom = deviceHeight
-            right = deviceWidth
+            bottom = userDeviceWidth
+            right = userDeviceHeight
         }
     }
 
@@ -62,13 +69,13 @@ open class OverlayViewLayout @JvmOverloads constructor(
     @CallSuper
     open fun deviceSizeSetting(viewWidth: Int, viewHeight: Int) {
         if (initMeasureSettingFrag) {
-            val widthSizeDiv = viewWidth / deviceViewBox.right
-            val heightSizeDiv = viewHeight / deviceViewBox.bottom
+            val widthSizeDiv = viewWidth / userDeviceWidth
+            val heightSizeDiv = viewHeight / userDeviceHeight
 
             val deviceOverlayRatio = min(widthSizeDiv, heightSizeDiv) * viewRatioScale
 
-            val overlayWidthSize = deviceViewBox.right * deviceOverlayRatio
-            val overlayHeightSize = deviceViewBox.bottom * deviceOverlayRatio
+            val overlayWidthSize = (userDeviceWidth * deviceOverlayRatio)
+            val overlayHeightSize = (userDeviceHeight * deviceOverlayRatio)
 
             val widthInterval = (viewWidth - overlayWidthSize) * .5f
             val heightInterval = (viewHeight - overlayHeightSize) * .5f
