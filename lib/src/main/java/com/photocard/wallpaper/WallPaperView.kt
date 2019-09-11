@@ -5,10 +5,12 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.PointF
+import android.graphics.Rect
 import android.support.annotation.RequiresPermission
 import android.util.AttributeSet
 import android.view.Gravity
 import android.view.MotionEvent
+import android.view.ScaleGestureDetector
 import android.widget.ImageView
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.catch
@@ -23,16 +25,24 @@ class WallPaperView @JvmOverloads constructor(
     defStyleAtt: Int = 0
 ) : OverlayViewLayout(context, attributes, defStyleAtt) {
 
-
     @Volatile
     private var checkWallPaperProcess = false
     private val wallPaperImageView = WallpaperImageView(context)
 
+    private val scaleListener: ScaleGestureDetector
+
     private val clickPoint = PointF()
+    private val wallpaperHitRect = Rect()
+        get() {
+            wallPaperImageView.getHitRect(field)
+            return field
+        }
 
     init {
         addView(wallPaperImageView)
+        scaleListener = ScaleGestureDetector(context, ScaleListener())
     }
+
 
     fun getWallPaperImageView(): ImageView = wallPaperImageView
 
@@ -59,6 +69,7 @@ class WallPaperView @JvmOverloads constructor(
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         event ?: return false
+        scaleListener.onTouchEvent(event)
 
         val curr = PointF(event.x, event.y)
 
@@ -80,19 +91,32 @@ class WallPaperView @JvmOverloads constructor(
             }
         }
 
+        wallPaperImageView.getHitRect(wallpaperHitRect)
+
         return true
     }
 
     private fun fixPosition() {
+        val nowRect = wallpaperHitRect
+
+        val xPosition = nowRect.left.toFloat()
+        val yPosition = nowRect.top.toFloat()
+
+        val viewWidth = nowRect.right - nowRect.left
+        val viewHeight = nowRect.bottom - nowRect.top
+
+        val scaleXCurrent = xPosition - wallPaperImageView.x
+        val scaleYCurrent = yPosition - wallPaperImageView.y
+
         val horizontalPosition = when {
-            wallPaperImageView.x > deviceViewBox.left -> deviceViewBox.left
-            wallPaperImageView.x < (deviceViewBox.right - wallPaperImageView.width) -> deviceViewBox.right - wallPaperImageView.width
-            else -> wallPaperImageView.x
+            xPosition > deviceViewBox.left -> deviceViewBox.left - scaleXCurrent
+            xPosition < (deviceViewBox.right - viewWidth) -> deviceViewBox.right - scaleXCurrent - viewWidth
+            else -> xPosition - scaleXCurrent
         }
         val verticalPosition = when {
-            wallPaperImageView.y > deviceViewBox.top -> deviceViewBox.top
-            wallPaperImageView.y < (deviceViewBox.bottom - wallPaperImageView.height) -> deviceViewBox.bottom - wallPaperImageView.height
-            else -> wallPaperImageView.y
+            yPosition > deviceViewBox.top -> deviceViewBox.top - scaleYCurrent
+            yPosition < (deviceViewBox.bottom - viewHeight) -> deviceViewBox.bottom - scaleYCurrent - viewHeight
+            else -> yPosition - scaleYCurrent
         }
 
         wallPaperImageView.animate()
@@ -100,6 +124,28 @@ class WallPaperView @JvmOverloads constructor(
             .y(verticalPosition)
             .setDuration(100)
             .start()
+    }
+
+    private inner class ScaleListener : ScaleGestureDetector.SimpleOnScaleGestureListener() {
+        override fun onScaleBegin(detector: ScaleGestureDetector?): Boolean {
+            return super.onScaleBegin(detector)
+        }
+
+        override fun onScale(detector: ScaleGestureDetector?): Boolean {
+            detector ?: return false
+            wallPaperImageView.animate()
+                .scaleX(wallPaperImageView.scaleX * detector.scaleFactor)
+                .scaleY(wallPaperImageView.scaleY * detector.scaleFactor)
+                .setDuration(0)
+                .start()
+            return true
+        }
+
+        override fun onScaleEnd(detector: ScaleGestureDetector?) {
+            super.onScaleEnd(detector)
+        }
+
+
     }
 
 
@@ -110,8 +156,10 @@ class WallPaperView @JvmOverloads constructor(
         if (checkWallPaperProcess) return
         checkWallPaperProcess = true
 
-        val transLeft = wallPaperImageView.x
-        val transTop = wallPaperImageView.y
+        val wallpaperRect = wallpaperHitRect
+
+        val transLeft = wallpaperRect.left
+        val transTop = wallpaperRect.top
 
         val bitmap = Bitmap.createBitmap(
             wallPaperImageView.drawable.intrinsicWidth,
@@ -119,10 +167,13 @@ class WallPaperView @JvmOverloads constructor(
             Bitmap.Config.ARGB_8888
         )
 
+        val viewWidth = wallpaperRect.right - wallpaperRect.left
+        val viewHeight = wallpaperRect.bottom - wallpaperRect.top
+
         val flow = flowOf(bitmap)
             .map(::drawBitmap)
-            .map(::resizeBitmap)
-            .map { cropSizeBitmap(it, transLeft.toInt(), transTop.toInt()) }
+            .map { resizeBitmap(it, viewWidth, viewHeight) }
+            .map { cropSizeBitmap(it, transLeft, transTop) }
             .catch { bitmapToMapReferenceErrorCatch(it, callback) }
             .map(::userDeviceResize)
 
@@ -148,12 +199,13 @@ class WallPaperView @JvmOverloads constructor(
         return bitmap
     }
 
-    private suspend fun resizeBitmap(bitmap: Bitmap): Bitmap = Bitmap.createScaledBitmap(
-        bitmap,
-        wallPaperImageView.width,
-        wallPaperImageView.height,
-        true
-    )
+    private suspend fun resizeBitmap(bitmap: Bitmap, width: Int, height: Int): Bitmap =
+        Bitmap.createScaledBitmap(
+            bitmap,
+            width,
+            height,
+            true
+        )
 
     private suspend fun cropSizeBitmap(bitmap: Bitmap, left: Int, top: Int): Bitmap =
         Bitmap.createBitmap(
