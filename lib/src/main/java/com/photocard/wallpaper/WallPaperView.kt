@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlin.math.max
+import kotlin.math.min
 
 class WallPaperView @JvmOverloads constructor(
     context: Context,
@@ -42,6 +43,10 @@ class WallPaperView @JvmOverloads constructor(
         addView(wallPaperImageView)
         scaleListener = ScaleGestureDetector(context, ScaleListener())
     }
+
+
+    private val minScaleSize = 1f
+    private val maxScaleSize = 3f
 
 
     fun getWallPaperImageView(): ImageView = wallPaperImageView
@@ -87,7 +92,7 @@ class WallPaperView @JvmOverloads constructor(
             }
 
             MotionEvent.ACTION_UP -> {
-                fixPosition()
+                fixPosition(100)
             }
         }
 
@@ -96,7 +101,7 @@ class WallPaperView @JvmOverloads constructor(
         return true
     }
 
-    private fun fixPosition() {
+    private fun fixPosition(duringTime : Long) {
         val nowRect = wallpaperHitRect
 
         val xPosition = nowRect.left.toFloat()
@@ -122,7 +127,7 @@ class WallPaperView @JvmOverloads constructor(
         wallPaperImageView.animate()
             .x(horizontalPosition)
             .y(verticalPosition)
-            .setDuration(100)
+            .setDuration(duringTime)
             .start()
     }
 
@@ -143,6 +148,26 @@ class WallPaperView @JvmOverloads constructor(
 
         override fun onScaleEnd(detector: ScaleGestureDetector?) {
             super.onScaleEnd(detector)
+            detector?: return
+            val viewScaleSize = wallPaperImageView.scaleX
+
+            val transScale = when {
+                viewScaleSize < minScaleSize -> minScaleSize
+                viewScaleSize > maxScaleSize -> maxScaleSize
+                else -> null
+            }
+
+            transScale?.run {
+                wallPaperImageView.animate()
+                    .scaleX(this)
+                    .scaleY(this)
+                    .x(detector.focusX)
+                    .y(detector.focusY)
+                    .setDuration(200)
+                    .withEndAction { fixPosition(0) }
+                    .start()
+            }
+
         }
 
 
