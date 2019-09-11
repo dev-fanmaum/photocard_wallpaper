@@ -4,10 +4,10 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.widget.Toast
 import com.bumptech.glide.Glide
-import com.photocard.wallpaper.WallPaperSupportImageView
+import com.photocard.wallpaper.util.WallPaperCallBack
 import kotlinx.android.synthetic.main.activity_main.*
 
-class MainActivity : AppCompatActivity(), WallPaperSupportImageView.WallPaperCallBack {
+class MainActivity : AppCompatActivity(), WallPaperCallBack {
 
 
     private val imageUri =

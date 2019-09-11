@@ -12,13 +12,13 @@ import android.view.Gravity
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.widget.ImageView
+import com.photocard.wallpaper.util.WallPaperCallBack
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlin.math.max
-import kotlin.math.min
 
 class WallPaperView @JvmOverloads constructor(
     context: Context,
@@ -177,7 +177,7 @@ class WallPaperView @JvmOverloads constructor(
     @ExperimentalCoroutinesApi
     @RequiresPermission(allOf = [android.Manifest.permission.SET_WALLPAPER, android.Manifest.permission.SET_WALLPAPER_HINTS])
     @Synchronized
-    fun saveAndCutBitmap(callback: WallPaperSupportImageView.WallPaperCallBack) {
+    fun saveAndCutBitmap(callback: WallPaperCallBack) {
         if (checkWallPaperProcess) return
         checkWallPaperProcess = true
 
@@ -208,7 +208,7 @@ class WallPaperView @JvmOverloads constructor(
 
     private suspend fun setWallPaper(
         bitmap: Bitmap,
-        callback: WallPaperSupportImageView.WallPaperCallBack
+        callback: WallPaperCallBack
     ) {
         val wallPaperManager = WallpaperManager.getInstance(context)
         wallPaperManager.setBitmap(bitmap)
@@ -243,7 +243,7 @@ class WallPaperView @JvmOverloads constructor(
 
     private suspend fun bitmapToMapReferenceErrorCatch(
         e: Throwable,
-        callback: WallPaperSupportImageView.WallPaperCallBack
+        callback: WallPaperCallBack
     ) {
         withContext(Dispatchers.Main) { callback.error(e) }
         checkWallPaperProcess = false

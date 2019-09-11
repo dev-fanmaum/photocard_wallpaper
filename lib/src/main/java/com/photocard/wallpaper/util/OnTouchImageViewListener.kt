@@ -1,4 +1,4 @@
-package com.photocard.wallpaper
+package com.photocard.wallpaper.util
 
 interface OnTouchImageViewListener {
     fun onMove()
