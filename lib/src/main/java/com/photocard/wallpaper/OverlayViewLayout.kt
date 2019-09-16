@@ -2,7 +2,9 @@ package com.photocard.wallpaper
 
 import android.content.Context
 import android.graphics.*
+import android.graphics.drawable.Drawable
 import android.support.annotation.CallSuper
+import android.support.v4.content.ContextCompat
 import android.util.AttributeSet
 import android.view.WindowManager
 import android.widget.FrameLayout
@@ -25,11 +27,15 @@ open class OverlayViewLayout @JvmOverloads constructor(
     private var viewRatioScale = .9f
 
     private var borderColor = Color.BLACK
-    private var borderScaleSize = 0.9f
+    private var outerColor = Color.BLACK
+    private var outerAlpha = 150
+    private var innerDrawable: Drawable? = null
+    private var borderStockWidthSize = resources.displayMetrics.density * 1
 
 
     init {
         setBackgroundColor(Color.TRANSPARENT)
+        attributeSetting(attributes)
         val size = Point()
         (context.getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay
             .getRealSize(size)
@@ -43,17 +49,27 @@ open class OverlayViewLayout @JvmOverloads constructor(
         }
     }
 
-    private fun attributeStting(attributes: AttributeSet?) {
+    private fun attributeSetting(attributes: AttributeSet?) {
         attributes ?: return
 
         val typeArray = context.obtainStyledAttributes(attributes, R.styleable.OverlayViewLayout)
-        borderScaleSize = typeArray.getDimension(
-            R.styleable.OverlayViewLayout_overlay_border_scale_size,
-            borderScaleSize
-        )
         borderColor =
             typeArray.getColor(R.styleable.OverlayViewLayout_overlay_border_color, borderColor)
+        outerColor =
+            typeArray.getColor(R.styleable.OverlayViewLayout_overlay_outer_color, outerColor)
 
+        outerAlpha = typeArray.getInteger(
+            R.styleable.OverlayViewLayout_overlay_inner_drawable_alpha,
+            outerAlpha
+        )
+        innerDrawable = typeArray.getDrawable(R.styleable.OverlayViewLayout_overlay_inner_drawable)
+
+        viewRatioScale = typeArray.getFloat(
+            R.styleable.OverlayViewLayout_overlay_device_box_scale,
+            viewRatioScale
+        )
+
+        typeArray.recycle()
     }
 
 
@@ -94,9 +110,11 @@ open class OverlayViewLayout @JvmOverloads constructor(
 
     override fun onDrawForeground(canvas: Canvas?) {
         super.onDrawForeground(canvas)
+        canvas?.drawBitmap(outerBitmap(), 0f, 0f, Paint())
+
         canvas?.drawRect(deviceViewBox, Paint().apply {
-            color = Color.BLACK
-            strokeWidth = 4f
+            color = borderColor
+            strokeWidth = borderStockWidthSize
             style = Paint.Style.STROKE
         })
         canvas?.drawRect(0f, 0f, measuredWidth.toFloat(), measuredHeight.toFloat(), Paint().apply {
@@ -104,5 +122,57 @@ open class OverlayViewLayout @JvmOverloads constructor(
             strokeWidth = 4f
             style = Paint.Style.STROKE
         })
+
+        val innerBitmap = innerBitmap()
+        if (innerBitmap != null) {
+            canvas?.drawBitmap(
+                innerBitmap,
+                deviceViewBox.left,
+                deviceViewBox.top,
+                Paint().apply {
+                    alpha = outerAlpha
+                }
+            )
+        }
     }
+
+    private fun outerBitmap(): Bitmap {
+        val bitmap = Bitmap.createBitmap(
+            measuredWidth, measuredHeight,
+            Bitmap.Config.ARGB_8888
+        )
+
+        val canvas = Canvas(bitmap)
+
+        canvas.drawRect(0f, 0f, measuredWidth.toFloat(), measuredHeight.toFloat(), Paint().apply {
+            color = outerColor
+        })
+
+        canvas.drawRect(deviceViewBox, Paint().apply {
+            xfermode = PorterDuffXfermode(PorterDuff.Mode.CLEAR)
+        })
+
+        return bitmap
+    }
+
+    private fun innerBitmap(): Bitmap? {
+        val tempInnerDrawable = innerDrawable
+        tempInnerDrawable ?: return null
+        tempInnerDrawable.setBounds(
+            0, 0,
+            deviceViewWidth.toInt(),
+            deviceViewHeight.toInt()
+        )
+        val bitmap = Bitmap.createBitmap(
+            deviceViewWidth.toInt(),
+            deviceViewHeight.toInt(),
+            Bitmap.Config.ARGB_8888
+        )
+
+        val canvas = Canvas(bitmap)
+        tempInnerDrawable.draw(canvas)
+
+        return bitmap
+    }
+
 }
