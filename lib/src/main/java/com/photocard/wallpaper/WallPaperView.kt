@@ -26,6 +26,9 @@ class WallPaperView @JvmOverloads constructor(
     defStyleAtt: Int = 0
 ) : OverlayViewLayout(context, attributes, defStyleAtt) {
 
+
+    @Volatile
+    private var motionState = MotionEvent.CLASSIFICATION_NONE
     @Volatile
     private var checkWallPaperProcess = false
     private val wallPaperImageView = WallpaperImageView(context)
@@ -80,19 +83,22 @@ class WallPaperView @JvmOverloads constructor(
 
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
+                motionState = MotionEvent.ACTION_DOWN
                 clickPoint.set(wallPaperImageView.x - curr.x, wallPaperImageView.y - curr.y)
             }
 
             MotionEvent.ACTION_MOVE -> {
-                /* wallPaperImageView.animate()
-                     .x(curr.x + clickPoint.x)
-                     .y(curr.y + clickPoint.y)
-                     .setDuration(0L)
-                     .start()*/
+                if (motionState == MotionEvent.ACTION_DOWN)
+                    wallPaperImageView.animate()
+                        .x(curr.x + clickPoint.x)
+                        .y(curr.y + clickPoint.y)
+                        .setDuration(0L)
+                        .start()
             }
 
             MotionEvent.ACTION_UP -> {
-                fixPosition(100)
+                if (motionState == MotionEvent.ACTION_DOWN)
+                    fixPosition(100)
             }
         }
 
@@ -101,7 +107,7 @@ class WallPaperView @JvmOverloads constructor(
         return true
     }
 
-    private fun fixPosition(duringTime: Long) {
+    private fun fixPosition(duringTime: Long = 0) {
         val nowRect = wallpaperHitRect
 
         val xPosition = nowRect.left.toFloat()
@@ -133,6 +139,7 @@ class WallPaperView @JvmOverloads constructor(
 
     private inner class ScaleListener : ScaleGestureDetector.SimpleOnScaleGestureListener() {
         override fun onScaleBegin(detector: ScaleGestureDetector?): Boolean {
+            motionState = MotionEvent.ACTION_POINTER_DOWN
             detector ?: return false
             clickPoint.set(
                 wallPaperImageView.x - detector.focusX,
@@ -143,18 +150,20 @@ class WallPaperView @JvmOverloads constructor(
 
         override fun onScale(detector: ScaleGestureDetector?): Boolean {
             detector ?: return false
-            wallPaperImageView.animate()
-                .scaleX(wallPaperImageView.scaleX * detector.scaleFactor)
-                .scaleY(wallPaperImageView.scaleY * detector.scaleFactor)
-                .x(clickPoint.x + detector.focusX)
-                .y(clickPoint.y + detector.focusY)
-                .setDuration(0)
-                .start()
+            if (motionState == MotionEvent.ACTION_POINTER_DOWN)
+                wallPaperImageView.animate()
+                    .scaleX(wallPaperImageView.scaleX * detector.scaleFactor)
+                    .scaleY(wallPaperImageView.scaleY * detector.scaleFactor)
+                    .x(clickPoint.x + detector.focusX)
+                    .y(clickPoint.y + detector.focusY)
+                    .setDuration(0)
+                    .start()
             return true
         }
 
         override fun onScaleEnd(detector: ScaleGestureDetector?) {
             super.onScaleEnd(detector)
+            motionState = MotionEvent.CLASSIFICATION_NONE
             detector ?: return
             val viewScaleSize = wallPaperImageView.scaleX
 
@@ -166,12 +175,11 @@ class WallPaperView @JvmOverloads constructor(
 
             transScale?.run {
                 wallPaperImageView.animate()
+                    .withStartAction { fixPosition(100) }
                     .scaleX(this)
                     .scaleY(this)
-//                    .x(detector.focusX)
-//                    .y(detector.focusY)
-                    .setDuration(200)
-                    .withEndAction { fixPosition(0) }
+                    .setDuration(100)
+                    .withEndAction { fixPosition(100) }
                     .start()
             }
 
