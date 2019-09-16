@@ -1,6 +1,6 @@
 package com.photocard.wallpaper
 
-import android.app.WallpaperManager
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -12,12 +12,8 @@ import android.view.Gravity
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.widget.ImageView
+import com.photocard.wallpaper.tast.settingBitmap
 import com.photocard.wallpaper.util.WallPaperCallBack
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
 import kotlin.math.max
 
 class WallPaperView @JvmOverloads constructor(
@@ -29,8 +25,6 @@ class WallPaperView @JvmOverloads constructor(
 
     @Volatile
     private var motionState = MotionEvent.CLASSIFICATION_NONE
-    @Volatile
-    private var checkWallPaperProcess = false
     private val wallPaperImageView = WallpaperImageView(context)
 
     private val scaleListener: ScaleGestureDetector
@@ -75,6 +69,7 @@ class WallPaperView @JvmOverloads constructor(
     }
 
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         event ?: return false
         scaleListener.onTouchEvent(event)
@@ -107,6 +102,7 @@ class WallPaperView @JvmOverloads constructor(
         return true
     }
 
+    @Suppress("SameParameterValue")
     private fun fixPosition(duringTime: Long = 0) {
         val nowRect = wallpaperHitRect
 
@@ -189,83 +185,37 @@ class WallPaperView @JvmOverloads constructor(
     }
 
 
-    @ExperimentalCoroutinesApi
     @RequiresPermission(allOf = [android.Manifest.permission.SET_WALLPAPER, android.Manifest.permission.SET_WALLPAPER_HINTS])
     @Synchronized
     fun saveAndCutBitmap(callback: WallPaperCallBack) {
-        if (checkWallPaperProcess) return
-        checkWallPaperProcess = true
-
-        val wallpaperRect = wallpaperHitRect
-
-        val transLeft = wallpaperRect.left
-        val transTop = wallpaperRect.top
-
         val bitmap = Bitmap.createBitmap(
             wallPaperImageView.drawable.intrinsicWidth,
             wallPaperImageView.drawable.intrinsicHeight,
             Bitmap.Config.ARGB_8888
         )
-
-        val viewWidth = wallpaperRect.right - wallpaperRect.left
-        val viewHeight = wallpaperRect.bottom - wallpaperRect.top
-
-        val flow = flowOf(bitmap)
-            .map(::drawBitmap)
-            .map { resizeBitmap(it, viewWidth, viewHeight) }
-            .map { cropSizeBitmap(it, transLeft, transTop) }
-            .catch { bitmapToMapReferenceErrorCatch(it, callback) }
-            .map(::userDeviceResize)
-
-        CoroutineScope(Dispatchers.Default).launch { flow.collect { setWallPaper(it, callback) } }
-
-    }
-
-    private suspend fun setWallPaper(
-        bitmap: Bitmap,
-        callback: WallPaperCallBack
-    ) {
-        val wallPaperManager = WallpaperManager.getInstance(context)
-        wallPaperManager.setBitmap(bitmap)
-
-        checkWallPaperProcess = false
-        withContext(Dispatchers.Main) { callback.complete() }
-
-    }
-
-    private suspend fun drawBitmap(bitmap: Bitmap): Bitmap {
         val canvas = Canvas(bitmap)
         wallPaperImageView.drawable.draw(canvas)
-        return bitmap
-    }
 
-    private suspend fun resizeBitmap(bitmap: Bitmap, width: Int, height: Int): Bitmap =
-        Bitmap.createScaledBitmap(
-            bitmap,
-            width,
-            height,
-            true
-        )
+        val wallpaperRect = wallpaperHitRect
+        val viewWidth = wallpaperRect.width()
+        val viewHeight = wallpaperRect.height()
 
-    private suspend fun cropSizeBitmap(bitmap: Bitmap, left: Int, top: Int): Bitmap =
-        Bitmap.createBitmap(
-            bitmap,
-            (deviceViewBox.left - left).toInt(),
-            (deviceViewBox.top - top).toInt(),
+        val rect = Rect(
+            (deviceViewBox.left - wallpaperRect.left).toInt(),
+            (deviceViewBox.top - wallpaperRect.top).toInt(),
             deviceViewWidth.toInt(),
             deviceViewHeight.toInt()
         )
 
-    private suspend fun bitmapToMapReferenceErrorCatch(
-        e: Throwable,
-        callback: WallPaperCallBack
-    ) {
-        withContext(Dispatchers.Main) { callback.error(e) }
-        checkWallPaperProcess = false
-        e.printStackTrace()
+        settingBitmap(
+            context,
+            bitmap,
+            viewWidth, viewHeight,
+            userDeviceWidth.toInt(), userDeviceHeight.toInt(),
+            rect,
+            callback
+        )
     }
 
-    private suspend fun userDeviceResize(bitmap: Bitmap): Bitmap =
-        Bitmap.createScaledBitmap(bitmap, userDeviceWidth.toInt(), userDeviceHeight.toInt(), true)
 
 }
