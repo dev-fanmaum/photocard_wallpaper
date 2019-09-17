@@ -6,12 +6,10 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Rect
 import com.photocard.wallpaper.util.WallPaperCallBack
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
+@ExperimentalCoroutinesApi
 @SuppressLint("MissingPermission")
 internal fun settingBitmap(
     context: Context,
