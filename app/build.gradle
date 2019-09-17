@@ -42,7 +42,7 @@ repositories {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation project(path: ':lib')
+    implementation project(path: ':wallpaper')
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation "$androidLibGroupName:recyclerview-v7:$androidLibVersion"

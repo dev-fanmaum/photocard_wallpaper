@@ -46,4 +46,4 @@ dependencies {
 }
 
 apply plugin: "com.github.dcendents.android-maven"
-group = "com.github.dev-fanmaum"
+group = "com.github.dev-fanmaum.photocard_wallpaper"
