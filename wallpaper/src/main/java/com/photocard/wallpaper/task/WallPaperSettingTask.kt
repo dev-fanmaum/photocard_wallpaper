@@ -1,4 +1,4 @@
-package com.photocard.wallpaper.tast
+package com.photocard.wallpaper.task
 
 import android.annotation.SuppressLint
 import android.app.WallpaperManager

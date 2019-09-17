@@ -12,7 +12,7 @@ import android.view.Gravity
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.widget.ImageView
-import com.photocard.wallpaper.tast.settingBitmap
+import com.photocard.wallpaper.task.settingBitmap
 import com.photocard.wallpaper.util.WallPaperCallBack
 import kotlin.math.max
 
