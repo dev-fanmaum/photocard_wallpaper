@@ -14,7 +14,7 @@
             app:overlay_border_color="@android:color/white"
             app:overlay_inner_drawable="@drawable/crop_base"
             app:overlay_inner_drawable_alpha="100"
-            app:overlay_device_box_scale="0.5"
+            app:overlay_device_box_scale=".9"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
