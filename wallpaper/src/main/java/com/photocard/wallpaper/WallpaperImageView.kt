@@ -61,6 +61,7 @@ internal class WallpaperImageView @JvmOverloads constructor(
     }
 
     private fun fitImageToView() {
+        drawable?: return
         changeEvent?.onChange(drawable.intrinsicWidth, drawable.intrinsicHeight)
     }
 
