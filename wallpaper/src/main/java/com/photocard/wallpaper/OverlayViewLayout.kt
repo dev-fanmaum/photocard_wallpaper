@@ -4,16 +4,15 @@ import android.content.Context
 import android.graphics.*
 import android.graphics.drawable.Drawable
 import android.support.annotation.CallSuper
-import android.support.v4.content.ContextCompat
 import android.util.AttributeSet
 import android.view.WindowManager
 import android.widget.FrameLayout
 import kotlin.math.min
 
 open class OverlayViewLayout @JvmOverloads constructor(
-    context: Context,
-    attributes: AttributeSet? = null,
-    defStyleAtt: Int = 0
+        context: Context,
+        attributes: AttributeSet? = null,
+        defStyleAtt: Int = 0
 ) : FrameLayout(context, attributes, defStyleAtt) {
 
     val deviceViewBox: RectF = RectF()
@@ -38,7 +37,7 @@ open class OverlayViewLayout @JvmOverloads constructor(
         attributeSetting(attributes)
         val size = Point()
         (context.getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay
-            .getRealSize(size)
+                .getRealSize(size)
 
         userDeviceWidth = size.x.toFloat()
         userDeviceHeight = size.y.toFloat()
@@ -54,19 +53,19 @@ open class OverlayViewLayout @JvmOverloads constructor(
 
         val typeArray = context.obtainStyledAttributes(attributes, R.styleable.OverlayViewLayout)
         borderColor =
-            typeArray.getColor(R.styleable.OverlayViewLayout_overlay_border_color, borderColor)
+                typeArray.getColor(R.styleable.OverlayViewLayout_overlay_border_color, borderColor)
         outerColor =
-            typeArray.getColor(R.styleable.OverlayViewLayout_overlay_outer_color, outerColor)
+                typeArray.getColor(R.styleable.OverlayViewLayout_overlay_outer_color, outerColor)
 
         outerAlpha = typeArray.getInteger(
-            R.styleable.OverlayViewLayout_overlay_inner_drawable_alpha,
-            outerAlpha
+                R.styleable.OverlayViewLayout_overlay_inner_drawable_alpha,
+                outerAlpha
         )
         innerDrawable = typeArray.getDrawable(R.styleable.OverlayViewLayout_overlay_inner_drawable)
 
         viewRatioScale = typeArray.getFloat(
-            R.styleable.OverlayViewLayout_overlay_device_box_scale,
-            viewRatioScale
+                R.styleable.OverlayViewLayout_overlay_device_box_scale,
+                viewRatioScale
         )
 
         typeArray.recycle()
@@ -76,12 +75,21 @@ open class OverlayViewLayout @JvmOverloads constructor(
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
         deviceSizeSetting(
-            MeasureSpec.getSize(widthMeasureSpec),
-            MeasureSpec.getSize(heightMeasureSpec)
+                MeasureSpec.getSize(widthMeasureSpec),
+                MeasureSpec.getSize(heightMeasureSpec)
         )
     }
 
-    private var initMeasureSettingFrag = true
+    override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
+        super.onLayout(changed, left, top, right, bottom)
+        if (true) {
+            initMeasureSettingFrag = false
+            deviceSizeSetting(measuredWidth, measuredHeight)
+        }
+    }
+
+    private var initMeasureSettingFrag = false
+    private var onDrawableInitFlag = true
     @CallSuper
     open fun deviceSizeSetting(viewWidth: Int, viewHeight: Int) {
         if (initMeasureSettingFrag) {
@@ -93,31 +101,41 @@ open class OverlayViewLayout @JvmOverloads constructor(
             val overlayWidthSize = (userDeviceWidth * deviceOverlayRatio)
             val overlayHeightSize = (userDeviceHeight * deviceOverlayRatio)
 
-            val widthInterval = (viewWidth - overlayWidthSize) * .5f
-            val heightInterval = (viewHeight - overlayHeightSize) * .5f
-
             deviceViewBox.apply {
-                left = widthInterval
-                top = heightInterval
-                right = widthInterval + overlayWidthSize
-                bottom = heightInterval + overlayHeightSize
+                left = 0f
+                top = 0f
+                right = overlayWidthSize
+                bottom = overlayHeightSize
             }
 
             initMeasureSettingFrag = false
+            onDrawableInitFlag = true
         }
     }
 
-
     override fun onDrawForeground(canvas: Canvas?) {
         super.onDrawForeground(canvas)
-        canvas?.drawBitmap(outerBitmap(), 0f, 0f, Paint())
-
-        canvas?.drawRect(deviceViewBox, Paint().apply {
-            color = borderColor
-            strokeWidth = borderStockWidthSize
-            style = Paint.Style.STROKE
-        })
-        canvas?.drawRect(0f, 0f, measuredWidth.toFloat(), measuredHeight.toFloat(), Paint().apply {
+        canvas ?: return
+        canvas.drawBitmap(outerBitmap(), 0f, 0f, Paint())
+        if (onDrawableInitFlag) {
+            val widthInterval = (canvas.width - deviceViewBox.right) * .5f
+            val heightInterval = (canvas.height - deviceViewBox.bottom) * .5f
+            deviceViewBox.apply {
+                left += widthInterval
+                top += heightInterval
+                right += widthInterval
+                bottom += heightInterval
+            }
+            onDrawableInitFlag = false
+        }
+        canvas.drawRect(
+                deviceViewBox,
+                Paint().apply {
+                    color = borderColor
+                    strokeWidth = borderStockWidthSize
+                    style = Paint.Style.STROKE
+                })
+        canvas.drawRect(0f, 0f, measuredWidth.toFloat(), measuredHeight.toFloat(), Paint().apply {
             color = Color.BLACK
             strokeWidth = 4f
             style = Paint.Style.STROKE
@@ -125,21 +143,21 @@ open class OverlayViewLayout @JvmOverloads constructor(
 
         val innerBitmap = innerBitmap()
         if (innerBitmap != null) {
-            canvas?.drawBitmap(
-                innerBitmap,
-                deviceViewBox.left,
-                deviceViewBox.top,
-                Paint().apply {
-                    alpha = outerAlpha
-                }
+            canvas.drawBitmap(
+                    innerBitmap,
+                    deviceViewBox.left,
+                    deviceViewBox.top,
+                    Paint().apply {
+                        alpha = outerAlpha
+                    }
             )
         }
     }
 
     private fun outerBitmap(): Bitmap {
         val bitmap = Bitmap.createBitmap(
-            measuredWidth, measuredHeight,
-            Bitmap.Config.ARGB_8888
+                measuredWidth, measuredHeight,
+                Bitmap.Config.ARGB_8888
         )
 
         val canvas = Canvas(bitmap)
@@ -159,14 +177,14 @@ open class OverlayViewLayout @JvmOverloads constructor(
         val tempInnerDrawable = innerDrawable
         tempInnerDrawable ?: return null
         tempInnerDrawable.setBounds(
-            0, 0,
-            deviceViewWidth.toInt(),
-            deviceViewHeight.toInt()
+                0, 0,
+                deviceViewWidth.toInt(),
+                deviceViewHeight.toInt()
         )
         val bitmap = Bitmap.createBitmap(
-            deviceViewWidth.toInt(),
-            deviceViewHeight.toInt(),
-            Bitmap.Config.ARGB_8888
+                deviceViewWidth.toInt(),
+                deviceViewHeight.toInt(),
+                Bitmap.Config.ARGB_8888
         )
 
         val canvas = Canvas(bitmap)
