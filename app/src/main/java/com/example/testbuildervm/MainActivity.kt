@@ -29,6 +29,9 @@ class MainActivity : AppCompatActivity(), WallPaperCallBack {
             wallPaperSettingView.saveAndCutBitmap(this)
         }
 
+
+
+
     }
 
     override fun error(e: Throwable) {
