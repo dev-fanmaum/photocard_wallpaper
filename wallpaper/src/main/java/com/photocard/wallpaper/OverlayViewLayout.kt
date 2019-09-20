@@ -5,6 +5,7 @@ import android.graphics.*
 import android.graphics.drawable.Drawable
 import android.support.annotation.CallSuper
 import android.util.AttributeSet
+import android.view.View
 import android.view.WindowManager
 import android.widget.FrameLayout
 import kotlin.math.min
@@ -14,6 +15,8 @@ open class OverlayViewLayout @JvmOverloads constructor(
     attributes: AttributeSet? = null,
     defStyleAtt: Int = 0
 ) : FrameLayout(context, attributes, defStyleAtt) {
+
+    private val overlayView by lazy { OverlayView(context) }
 
     val deviceViewBox: RectF = RectF()
 
@@ -34,6 +37,7 @@ open class OverlayViewLayout @JvmOverloads constructor(
 
     init {
         setBackgroundColor(Color.TRANSPARENT)
+        addView(overlayView, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
         attributeSetting(attributes)
         val size = Point()
         (context.getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay
@@ -47,6 +51,12 @@ open class OverlayViewLayout @JvmOverloads constructor(
             right = userDeviceHeight
         }
     }
+
+    override fun addView(child: View?) {
+        super.addView(child)
+        overlayView.bringToFront()
+    }
+
 
     private fun attributeSetting(attributes: AttributeSet?) {
         attributes ?: return
@@ -74,8 +84,8 @@ open class OverlayViewLayout @JvmOverloads constructor(
     private var onForegroundFlag = true
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
         super.onLayout(changed, left, top, right, bottom)
-        if ( onForegroundFlag ) {
-            deviceSizeSetting(right- left, bottom - top)
+        if (onForegroundFlag) {
+            deviceSizeSetting(right - left, bottom - top)
         }
     }
 
@@ -101,85 +111,85 @@ open class OverlayViewLayout @JvmOverloads constructor(
         }
     }
 
-    override fun onDrawForeground(canvas: Canvas?) {
-        super.onDrawForeground(canvas)
-        canvas ?: return
-        canvas.drawBitmap(outerBitmap(), 0f, 0f, Paint())
-        /*val widthInterval = (canvas.width - deviceViewBox.right) * .5f
-        val heightInterval = (canvas.height - deviceViewBox.bottom) * .5f
-        deviceViewBox.apply {
-            left += widthInterval
-            top += heightInterval
-            right += widthInterval
-            bottom += heightInterval
-        }*/
-        onForegroundFlag = false
-//        deviceSizeSetting(canvas.width, canvas.height)
-        canvas.drawRect(
-            deviceViewBox,
-            Paint().apply
+
+    inner class OverlayView(context: Context) : View(context) {
+        override fun onDraw(canvas: Canvas?) {
+            super.onDraw(canvas)
+            canvas ?: return
+            canvas.drawBitmap(outerBitmap(), 0f, 0f, Paint())
+            onForegroundFlag = false
+            canvas.drawRect(
+                deviceViewBox,
+                Paint().apply
+                {
+                    color = borderColor
+                    strokeWidth = borderStockWidthSize
+                    style = Paint.Style.STROKE
+                })
+            canvas.drawRect(0f, 0f, measuredWidth.toFloat(), measuredHeight.toFloat(), Paint().apply
             {
-                color = borderColor
-                strokeWidth = borderStockWidthSize
+                color = Color.BLACK
+                strokeWidth = 4f
                 style = Paint.Style.STROKE
             })
-        canvas.drawRect(0f, 0f, measuredWidth.toFloat(), measuredHeight.toFloat(), Paint().apply
-        {
-            color = Color.BLACK
-            strokeWidth = 4f
-            style = Paint.Style.STROKE
-        })
 
-        val innerBitmap = innerBitmap()
-        if (innerBitmap != null) {
-            canvas.drawBitmap(
-                innerBitmap,
-                deviceViewBox.left,
-                deviceViewBox.top,
-                Paint().apply {
-                    alpha = outerAlpha
-                }
+            val innerBitmap = innerBitmap()
+            if (innerBitmap != null) {
+                canvas.drawBitmap(
+                    innerBitmap,
+                    deviceViewBox.left,
+                    deviceViewBox.top,
+                    Paint().apply {
+                        alpha = outerAlpha
+                    }
+                )
+            }
+        }
+
+        private fun outerBitmap(): Bitmap {
+            val bitmap = Bitmap.createBitmap(
+                measuredWidth, measuredHeight,
+                Bitmap.Config.ARGB_8888
             )
+
+            val canvas = Canvas(bitmap)
+
+            canvas.drawRect(
+                0f,
+                0f,
+                measuredWidth.toFloat(),
+                measuredHeight.toFloat(),
+                Paint().apply {
+                    color = outerColor
+                })
+
+            canvas.drawRect(deviceViewBox, Paint().apply {
+                xfermode = PorterDuffXfermode(PorterDuff.Mode.CLEAR)
+            })
+
+            return bitmap
+        }
+
+        private fun innerBitmap(): Bitmap? {
+            val tempInnerDrawable = innerDrawable
+            tempInnerDrawable ?: return null
+            tempInnerDrawable.setBounds(
+                0, 0,
+                deviceViewWidth.toInt(),
+                deviceViewHeight.toInt()
+            )
+            val bitmap = Bitmap.createBitmap(
+                deviceViewWidth.toInt(),
+                deviceViewHeight.toInt(),
+                Bitmap.Config.ARGB_8888
+            )
+
+            val canvas = Canvas(bitmap)
+            tempInnerDrawable.draw(canvas)
+
+            return bitmap
         }
     }
 
-    private fun outerBitmap(): Bitmap {
-        val bitmap = Bitmap.createBitmap(
-            measuredWidth, measuredHeight,
-            Bitmap.Config.ARGB_8888
-        )
-
-        val canvas = Canvas(bitmap)
-
-        canvas.drawRect(0f, 0f, measuredWidth.toFloat(), measuredHeight.toFloat(), Paint().apply {
-            color = outerColor
-        })
-
-        canvas.drawRect(deviceViewBox, Paint().apply {
-            xfermode = PorterDuffXfermode(PorterDuff.Mode.CLEAR)
-        })
-
-        return bitmap
-    }
-
-    private fun innerBitmap(): Bitmap? {
-        val tempInnerDrawable = innerDrawable
-        tempInnerDrawable ?: return null
-        tempInnerDrawable.setBounds(
-            0, 0,
-            deviceViewWidth.toInt(),
-            deviceViewHeight.toInt()
-        )
-        val bitmap = Bitmap.createBitmap(
-            deviceViewWidth.toInt(),
-            deviceViewHeight.toInt(),
-            Bitmap.Config.ARGB_8888
-        )
-
-        val canvas = Canvas(bitmap)
-        tempInnerDrawable.draw(canvas)
-
-        return bitmap
-    }
 
 }
