@@ -77,6 +77,10 @@ open class OverlayViewLayout @JvmOverloads constructor(
             R.styleable.OverlayViewLayout_overlay_device_box_scale,
             viewRatioScale
         )
+        borderStockWidthSize = typeArray.getDimension(
+            R.styleable.OverlayViewLayout_overlay_border_stock_width,
+            borderStockWidthSize
+        )
 
         typeArray.recycle()
     }
