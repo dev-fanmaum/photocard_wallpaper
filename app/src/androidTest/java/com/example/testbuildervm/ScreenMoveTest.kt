@@ -2,15 +2,17 @@ package com.example.testbuildervm
 
 import android.content.Intent
 import android.graphics.Rect
-import android.support.constraint.ConstraintLayout
-import android.support.test.espresso.Espresso.onView
-import android.support.test.espresso.ViewAction
-import android.support.test.espresso.action.ViewActions
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.ViewAction
+import androidx.test.espresso.action.ViewActions
 
-import android.support.test.espresso.matcher.ViewMatchers.withId
-import android.support.test.filters.LargeTest
-import android.support.test.rule.ActivityTestRule
-import android.support.test.runner.AndroidJUnit4
+import androidx.test.espresso.matcher.ViewMatchers.withId
+import androidx.test.filters.LargeTest
+import androidx.test.rule.ActivityTestRule
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.example.testbuildervm.action.PinchZoom
 import com.photocard.wallpaper.WallPaperView
 import junit.framework.Assert.fail
 import org.junit.Before
@@ -33,6 +35,13 @@ class ScreenMoveTest {
     val wallpaperImageViewEspresso by lazy { onView(withId(R.id.wallPaperSettingView)) }
     val button by lazy { activityRule.activity.findViewById<WallPaperView>(R.id.save_button) }
     val buttonEspresso by lazy { onView(withId(R.id.save_button)) }
+
+    private val moveMap = mapOf<Int, ViewAction>(
+        0 to ViewActions.swipeLeft(),
+        1 to ViewActions.swipeRight(),
+        2 to ViewActions.swipeUp(),
+        3 to ViewActions.swipeDown()
+    )
 
     @Before
     fun init() {
@@ -57,7 +66,6 @@ class ScreenMoveTest {
 
     }
 
-
     @Test
     fun screenMove() {
 
@@ -69,16 +77,23 @@ class ScreenMoveTest {
             }
     }
 
-    private val moveMap = mapOf<Int, ViewAction>(
-        0 to ViewActions.swipeLeft(),
-        1 to ViewActions.swipeRight(),
-        2 to ViewActions.swipeUp(),
-        3 to ViewActions.swipeDown()
-    )
-
     private fun randomMoveTaskList(i: Int) =
-        List(i) { moveMap.get(Random.nextInt(0, moveMap.size)) }
+        List(i) { moveMap[Random.nextInt(0, moveMap.size)] }
 
+
+    @Test
+    fun screenScale(){
+        activityRule.activity.runOnUiThread { wallpaperImageViewEspresso.perform(PinchZoom()) }
+//        activityRule.activity.
+        // scale test code
+
+        Thread.sleep(500)
+        wallpaperImageViewEspresso.perform(ViewActions.click())
+        wallpaperImageViewEspresso.perform(ViewActions.swipeDown())
+
+
+        Thread.sleep(1000)
+    }
 
     private fun imageBoxRectChecker(): String {
         val rect = Rect(

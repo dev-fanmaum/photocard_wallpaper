@@ -6,7 +6,7 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.PointF
 import android.graphics.Rect
-import android.support.annotation.RequiresPermission
+import androidx.annotation.RequiresPermission
 import android.util.AttributeSet
 import android.view.Gravity
 import android.view.MotionEvent
