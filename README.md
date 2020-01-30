@@ -1,5 +1,4 @@
-[![Release](https://jitpack.io/v/dev-fanmaum/photocard_wallpaper.svg)]
-(https://jitpack.io/#dev-fanmaum/photocard_wallpaper)
+[![Release](https://jitpack.io/v/dev-fanmaum/photocard_wallpaper.svg)](https://jitpack.io/#dev-fanmaum/photocard_wallpaper)
 
 
 ## Setup
