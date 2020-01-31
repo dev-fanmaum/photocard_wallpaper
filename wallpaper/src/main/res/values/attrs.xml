@@ -3,7 +3,6 @@
 
     <declare-styleable name="OverlayViewLayout">
         <attr name="overlay_border_color" format="color"/>
-        <attr name="overlay_border_scale_size" format="dimension"/>
         <attr name="overlay_border_stock_width" format="dimension"/>
         <attr name="overlay_device_box_scale" format="float"/>
         <attr name="overlay_outer_color" format="color"/>

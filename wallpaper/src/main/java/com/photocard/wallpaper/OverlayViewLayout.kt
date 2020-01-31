@@ -29,7 +29,7 @@ open class OverlayViewLayout @JvmOverloads constructor(
     private var viewRatioScale = .9f
 
     private var borderColor = Color.BLACK
-    private var outerColor = Color.BLACK
+    private var outerColor = Color.parseColor("#50000000")
     private var outerAlpha = 150
     private var innerDrawable: Drawable? = null
     private var borderStockWidthSize = resources.displayMetrics.density * 1

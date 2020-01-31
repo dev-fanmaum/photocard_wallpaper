@@ -11,14 +11,15 @@
             android:id="@+id/wallPaperSettingView"
             android:layout_width="300dp"
             android:layout_height="300dp"
-            app:overlay_outer_color="#50000000"
-            app:overlay_border_color="@android:color/holo_red_light"
-            app:overlay_inner_drawable_alpha="100"
-            app:overlay_device_box_scale=".9"
+            app:overlay_inner_drawable="@drawable/wallpaper_crop_base"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"/>
+            app:layout_constraintTop_toTopOf="parent"
+            app:overlay_border_color="@android:color/holo_red_light"
+            app:overlay_border_stock_width="1dp"
+            app:overlay_device_box_scale=".9"
+            app:overlay_inner_drawable_alpha="100" />
 
     <Button
             android:id="@+id/save_button"
